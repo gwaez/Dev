@@ -1,0 +1,878 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css"/>
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .modal { display: none; }
+        .modal.show { display: flex; }
+        .fade-in { animation: fadeIn 0.3s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+        .status-badge { padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+        /* Active navigation link style */
+        .nav-link.active { background-color: #4a5568; color: #ffffff; }
+    </style>
+</head>
+<body class="bg-gray-100 flex flex-col min-h-screen">
+
+    <!-- Top Navigation Bar -->
+    <nav class="bg-gray-800 text-white p-4 shadow-md flex justify-between items-center">
+        <div class="flex items-center gap-4">
+            <i class="fas fa-shield-halved text-3xl text-indigo-400"></i>
+            <h1 class="text-2xl font-bold">Admin</h1>
+        </div>
+        <div class="flex-1 flex justify-center space-x-4">
+            <a href="#offers" id="nav-offers" class="nav-link px-3 py-2 rounded-md text-sm font-medium text-gray-300 hover:bg-gray-700 hover:text-white">Offers</a>
+            <a href="#services" id="nav-services" class="nav-link px-3 py-2 rounded-md text-sm font-medium text-gray-300 hover:bg-gray-700 hover:text-white">Services</a>
+            <a href="#plans" id="nav-plans" class="nav-link px-3 py-2 rounded-md text-sm font-medium text-gray-300 hover:bg-gray-700 hover:text-white">Plans</a>
+            <a href="#users" id="nav-users" class="nav-link px-3 py-2 rounded-md text-sm font-medium text-gray-300 hover:bg-gray-700 hover:text-white">Users</a>
+            <a href="#sales" id="nav-sales" class="nav-link px-3 py-2 rounded-md text-sm font-medium text-gray-300 hover:bg-gray-700 hover:text-white">Sales</a>
+            <a href="#customers" id="nav-customers" class="nav-link px-3 py-2 rounded-md text-sm font-medium text-gray-300 hover:bg-gray-700 hover:text-white">Customers</a>
+            <a href="#crm" id="nav-crm" class="nav-link px-3 py-2 rounded-md text-sm font-medium text-gray-300 hover:bg-gray-700 hover:text-white">CRM</a>
+        </div>
+        <div>
+            <button id="save-changes-btn" class="bg-green-500 text-white py-2 px-4 rounded-lg hover:bg-green-600 shadow-sm flex items-center font-semibold hidden"><i class="fas fa-save mr-2"></i>Save All Changes</button>
+            <a href="#" id="logout-btn" class="ml-4 px-3 py-2 rounded-md text-sm font-medium bg-gray-700 text-gray-300 hover:bg-gray-600 hover:text-white"><i class="fas fa-sign-out-alt mr-2"></i>Logout</a>
+        </div>
+    </nav>
+
+    <!-- Main Content Area -->
+    <div class="flex-1 flex flex-col">
+        <header class="bg-white shadow-md p-4 flex justify-between items-center">
+            <h2 id="header-title" class="text-2xl font-bold text-gray-800">Manage Offers</h2>
+        </header>
+        
+        <main class="flex-1 p-4 sm:p-6">
+            <!-- Offers Section -->
+            <div id="offers-section">
+                <div class="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
+                    <input type="text" id="offer-search" placeholder="Search offers..." class="w-full sm:w-64 p-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500">
+                    <div class="flex gap-4">
+                        <button id="export-offers-btn" class="bg-purple-600 text-white py-2 px-4 rounded-lg hover:bg-purple-700 shadow-sm flex items-center font-semibold w-full sm:w-auto justify-center"><i class="fas fa-file-export mr-2"></i>Export Selected</button>
+                        <button id="delete-offers-btn" class="bg-red-600 text-white py-2 px-4 rounded-lg hover:bg-red-700 shadow-sm flex items-center font-semibold w-full sm:w-auto justify-center"><i class="fas fa-trash mr-2"></i>Delete Selected</button>
+                    </div>
+                </div>
+                <div class="bg-white rounded-lg shadow-md overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"><input type="checkbox" id="check-all-offers" class="h-4 w-4 text-indigo-600 border-gray-300 rounded"></th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Offer ID</th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Customer</th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total Price</th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="offers-table-body" class="bg-white divide-y divide-gray-200"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Services Section -->
+            <div id="services-section" class="hidden">
+                 <div class="flex flex-col sm:flex-row justify-end items-center mb-6 gap-4">
+                    <button id="add-item-btn" class="bg-indigo-600 text-white py-2 px-4 rounded-lg hover:bg-indigo-700 shadow-sm flex items-center font-semibold w-full sm:w-auto justify-center"><i class="fas fa-plus mr-2"></i><span id="add-btn-text">Add Service</span></button>
+                </div>
+                <div id="services-list" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"></div>
+            </div>
+
+            <!-- Plans Section -->
+            <div id="plans-section" class="hidden">
+                <div class="flex flex-col sm:flex-row justify-end items-center mb-6 gap-4">
+                    <button id="add-plan-btn" class="bg-indigo-600 text-white py-2 px-4 rounded-lg hover:bg-indigo-700 shadow-sm flex items-center font-semibold w-full sm:w-auto justify-center"><i class="fas fa-plus mr-2"></i>Add Plan</button>
+                </div>
+                <div id="plans-list" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"></div>
+            </div>
+
+            <!-- Users Section -->
+            <div id="users-section" class="hidden">
+                <h3 class="text-xl font-bold text-gray-800 mb-4">User Management</h3>
+                <p class="text-gray-600">Content for user management will go here.</p>
+            </div>
+
+            <!-- Sales Section -->
+            <div id="sales-section" class="hidden">
+                <h3 class="text-xl font-bold text-gray-800 mb-4">Sales Overview</h3>
+                <p class="text-gray-600">Content for sales data and reports will go here.</p>
+            </div>
+
+            <!-- CRM Section -->
+            <div id="crm-section" class="hidden">
+                <div class="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
+                    <input type="text" id="customer-search" placeholder="Search customers..." class="w-full sm:w-64 p-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500">
+                    <div class="flex gap-4">
+                        <button id="add-customer-btn" class="bg-indigo-600 text-white py-2 px-4 rounded-lg hover:bg-indigo-700 shadow-sm flex items-center font-semibold w-full sm:w-auto justify-center"><i class="fas fa-plus mr-2"></i>Add Customer</button>
+                        <button id="export-customers-btn" class="bg-purple-600 text-white py-2 px-4 rounded-lg hover:bg-purple-700 shadow-sm flex items-center font-semibold w-full sm:w-auto justify-center"><i class="fas fa-file-export mr-2"></i>Export Selected</button>
+                        <button id="delete-customers-btn" class="bg-red-600 text-white py-2 px-4 rounded-lg hover:bg-red-700 shadow-sm flex items-center font-semibold w-full sm:w-auto justify-center"><i class="fas fa-trash mr-2"></i>Delete Selected</button>
+                    </div>
+                </div>
+                <div class="bg-white rounded-lg shadow-md overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"><input type="checkbox" id="check-all-customers" class="h-4 w-4 text-indigo-600 border-gray-300 rounded"></th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Customer ID</th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Mobile</th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date Added</th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="customers-table-body" class="bg-white divide-y divide-gray-200"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Customers Section -->
+    <div id="customers-section" class="hidden">
+        <div class="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
+            <input type="text" id="customer-search" placeholder="Search customers..." class="w-full sm:w-64 p-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500">
+            <div class="flex gap-4">
+                <button id="add-customer-btn" class="bg-indigo-600 text-white py-2 px-4 rounded-lg hover:bg-indigo-700 shadow-sm flex items-center font-semibold w-full sm:w-auto justify-center"><i class="fas fa-plus mr-2"></i>Add Customer</button>
+                <button id="export-customers-btn" class="bg-purple-600 text-white py-2 px-4 rounded-lg hover:bg-purple-700 shadow-sm flex items-center font-semibold w-full sm:w-auto justify-center"><i class="fas fa-file-export mr-2"></i>Export Selected</button>
+                <button id="delete-customers-btn" class="bg-red-600 text-white py-2 px-4 rounded-lg hover:bg-red-700 shadow-sm flex items-center font-semibold w-full sm:w-auto justify-center"><i class="fas fa-trash mr-2"></i>Delete Selected</button>
+            </div>
+        </div>
+        <div class="bg-white rounded-lg shadow-md overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"><input type="checkbox" id="check-all-customers" class="h-4 w-4 text-indigo-600 border-gray-300 rounded"></th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Customer ID</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Mobile</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date Added</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="customers-table-body" class="bg-white divide-y divide-gray-200"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal -->
+    <div id="edit-modal" class="modal fixed inset-0 bg-gray-900 bg-opacity-60 items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-2xl fade-in">
+            <div class="p-6 border-b flex justify-between items-center"><h3 id="modal-title" class="text-2xl font-bold text-gray-800">Edit Item</h3><button id="modal-close-x" class="text-gray-500 hover:text-gray-800 text-3xl">&times;</button></div>
+            <div id="modal-body" class="p-6 max-h-[60vh] overflow-y-auto"></div>
+            <div class="p-6 bg-gray-50 flex justify-end space-x-4"><button id="modal-cancel" class="bg-gray-200 text-gray-800 py-2 px-5 rounded-lg hover:bg-gray-300 font-semibold">Cancel</button><button id="modal-save" class="bg-indigo-600 text-white py-2 px-5 rounded-lg hover:bg-indigo-700 font-semibold">Save</button></div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            if (sessionStorage.getItem('isAdminAuthenticated') !== 'true') {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            const eles = {
+                servicesList: document.getElementById('services-list'),
+                plansList: document.getElementById('plans-list'),
+                offersList: document.getElementById('offers-table-body'), // Corrected reference
+                addItemBtn: document.getElementById('add-item-btn'),
+                addBtnText: document.getElementById('add-btn-text'),
+                saveChangesBtn: document.getElementById('save-changes-btn'),
+                logoutBtn: document.getElementById('logout-btn'),
+                navLinks: document.querySelectorAll('.nav-link'),
+                headerTitle: document.getElementById('header-title'),
+                modal: document.getElementById('edit-modal'),
+                modalTitle: document.getElementById('modal-title'),
+                modalBody: document.getElementById('modal-body'),
+                modalSave: document.getElementById('modal-save'),
+                modalCancel: document.getElementById('modal-cancel'),
+                modalCloseX: document.getElementById('modal-close-x'),
+                offerSearch: document.getElementById('offer-search'),
+                offersTableBody: document.getElementById('offers-table-body'),
+                checkAllOffers: document.getElementById('check-all-offers'),
+                exportOffersBtn: document.getElementById('export-offers-btn'),
+                deleteOffersBtn: document.getElementById('delete-offers-btn'),
+                customerSearch: document.getElementById('customer-search'),
+                customersTableBody: document.getElementById('customers-table-body'),
+                checkAllCustomers: document.getElementById('check-all-customers'),
+                addCustomerBtn: document.getElementById('add-customer-btn'),
+                exportCustomersBtn: document.getElementById('export-customers-btn'),
+                deleteCustomersBtn: document.getElementById('delete-customers-btn'),
+                customersList: document.getElementById('customers-table-body'),
+                
+                sections: {
+                    offers: document.getElementById('offers-section'),
+                    services: document.getElementById('services-section'),
+                    plans: document.getElementById('plans-section'),
+                    users: document.getElementById('users-section'),
+                    sales: document.getElementById('sales-section'),
+                    crm: document.getElementById('crm-section'),
+                    customers: document.getElementById('customers-section'),
+                },
+                navs: {
+                    offers: document.getElementById('nav-offers'),
+                    services: document.getElementById('nav-services'),
+                    plans: document.getElementById('nav-plans'),
+                    users: document.getElementById('nav-users'),
+                    sales: document.getElementById('nav-sales'),
+                    crm: document.getElementById('nav-crm'),
+                    customers: document.getElementById('nav-customers'),
+                }
+            };
+
+            let servicesData = [], plansData = [], offersData = [], customersData = [];
+            let currentEdit = { type: null, index: -1 };
+            let currentView = 'customers'; // Set initial view to customers
+
+            // No sidebar to close, so this function is empty
+            const closeSidebar = () => {}; 
+            eles.modalCloseX.addEventListener('click', () => closeModal());
+            eles.modalCancel.addEventListener('click', () => closeModal());
+
+            async function fetchData() {
+                try {
+                    const [servicesRes, offersRes, customersRes] = await Promise.all([
+                        fetch(`services.json?t=${new Date().getTime()}`),
+                        fetch(`get_offers.php?t=${new Date().getTime()}`),
+                        fetch(`customers.json?t=${new Date().getTime()}`)
+                    ]);
+                    const servicesJson = await servicesRes.json();
+                    servicesData = servicesJson.services;
+                    plansData = servicesJson.plans;
+                    offersData = await offersRes.json();
+                    customersData = await customersRes.json();
+                    render();
+                } catch (error) { console.error("Failed to fetch data:", error); alert("Could not load data."); }
+            }
+
+            function render() {
+                if (currentView === 'services') renderCards(eles.servicesList, servicesData, 'service');
+                else if (currentView === 'plans') renderCards(eles.plansList, plansData, 'plan');
+                else if (currentView === 'offers') renderOffersTable();
+                else if (currentView === 'customers') renderCustomersTable();
+                else if (currentView === 'crm') renderCustomersTable();
+                // No rendering needed for static sections like users, sales
+            }
+
+            let filteredOffers = [];
+            function renderOffersTable() {
+                const searchTerm = eles.offerSearch.value.toLowerCase();
+                filteredOffers = offersData.filter(offer =>
+                    offer.id.toLowerCase().includes(searchTerm) ||
+                    offer.customer.name.toLowerCase().includes(searchTerm) ||
+                    offer.customer.email.toLowerCase().includes(searchTerm) ||
+                    offer.status.toLowerCase().includes(searchTerm)
+                );
+
+                eles.offersTableBody.innerHTML = ''; // Clear existing rows
+
+                if (filteredOffers.length === 0) {
+                    eles.offersTableBody.innerHTML = `<tr><td colspan="7" class="text-center py-8 text-gray-500">No offers found.</td></tr>`;
+                    return;
+                }
+
+                const statusOptions = ['Awaiting Payment', 'Payment Confirmed', 'Contract Sent', 'In Progress', 'Completed', 'Cancelled'];
+                const statusColors = {
+                    'Awaiting Payment': 'bg-yellow-100 text-yellow-800',
+                    'Payment Confirmed': 'bg-blue-100 text-blue-800',
+                    'Contract Sent': 'bg-indigo-100 text-indigo-800',
+                    'In Progress': 'bg-purple-100 text-purple-800',
+                    'Completed': 'bg-green-100 text-green-800',
+                    'Cancelled': 'bg-red-100 text-red-800'
+                };
+
+                filteredOffers.forEach(offer => {
+                    const row = document.createElement('tr');
+                    row.className = 'bg-white border-b hover:bg-gray-50';
+                    row.innerHTML = `
+                        <td class="px-6 py-4"><input type="checkbox" class="offer-checkbox h-4 w-4 text-indigo-600 border-gray-300 rounded" data-id="${offer.id}"></td>
+                        <td class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap">${offer.id}</td>
+                        <td class="px-6 py-4">${offer.customer.name}<br><span class="text-xs text-gray-500">${offer.customer.email}</span></td>
+                        <td class="px-6 py-4 font-bold">AED ${offer.totalPrice.toFixed(2)}</td>
+                        <td class="px-6 py-4">${new Date(offer.timestamp).toLocaleDateString()}</td>
+                        <td class="px-6 py-4">
+                            <select data-id="${offer.id}" class="status-select p-2 rounded-lg border-gray-300 focus:ring-indigo-500 focus:border-indigo-500 ${statusColors[offer.status]} font-semibold">
+                                ${statusOptions.map(opt => `<option value="${opt}" ${opt === offer.status ? 'selected' : ''}>${opt}</option>`).join('')}
+                            </select>
+                        </td>
+                        <td class="px-6 py-4 flex space-x-2">
+                            <button class="view-offer-btn text-blue-600 hover:text-blue-800 font-semibold" data-id="${offer.id}"><i class="fas fa-eye mr-1"></i>View</button>
+                            <button class="export-offer-img-btn text-purple-600 hover:text-purple-800 font-semibold" data-id="${offer.id}"><i class="fas fa-image mr-1"></i>Image</button>
+                        </td>
+                    `;
+                    eles.offersTableBody.appendChild(row);
+                });
+            }
+
+            let filteredCustomers = [];
+            function renderCustomersTable() {
+                const searchTerm = eles.customerSearch.value.toLowerCase();
+                filteredCustomers = customersData.filter(customer =>
+                    customer.id.toLowerCase().includes(searchTerm) ||
+                    customer.name.toLowerCase().includes(searchTerm) ||
+                    customer.email.toLowerCase().includes(searchTerm) ||
+                    customer.mobile.toLowerCase().includes(searchTerm)
+                );
+
+                eles.customersTableBody.innerHTML = '';
+
+                if (filteredCustomers.length === 0) {
+                    eles.customersTableBody.innerHTML = `<tr><td colspan="7" class="text-center py-8 text-gray-500">No customers found.</td></tr>`;
+                    return;
+                }
+
+                filteredCustomers.forEach(customer => {
+                    const row = document.createElement('tr');
+                    row.className = 'bg-white border-b hover:bg-gray-50';
+                    row.innerHTML = `
+                        <td class="px-6 py-4"><input type="checkbox" class="customer-checkbox h-4 w-4 text-indigo-600 border-gray-300 rounded" data-id="${customer.id}"></td>
+                        <td class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap">${customer.id}</td>
+                        <td class="px-6 py-4">${customer.name}</td>
+                        <td class="px-6 py-4">${customer.email}</td>
+                        <td class="px-6 py-4">${customer.mobile}</td>
+                        <td class="px-6 py-4">${new Date(customer.timestamp).toLocaleDateString()}</td>
+                        <td class="px-6 py-4 flex space-x-2">
+                            <button class="edit-customer-btn text-blue-600 hover:text-blue-800 font-semibold" data-id="${customer.id}"><i class="fas fa-edit mr-1"></i>Edit</button>
+                            <button class="delete-customer-btn text-red-600 hover:text-red-800 font-semibold" data-id="${customer.id}"><i class="fas fa-trash mr-1"></i>Delete</button>
+                        </td>
+                    `;
+                    eles.customersTableBody.appendChild(row);
+                });
+            }
+
+            
+
+            async function updateOfferStatus(id, status) {
+                try {
+                    const response = await fetch('update_offer_status.php', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ id, status })
+                    });
+                    if (!response.ok) throw new Error('Failed to update status');
+                    const offer = offersData.find(o => o.id === id);
+                    if(offer) offer.status = status;
+                    renderOffersTable(); // Re-render to update colors
+                } catch (error) { console.error('Update Error:', error); alert('Could not update offer status.'); }
+            }
+
+            async function updateCustomer(id, customerData) {
+                try {
+                    const response = await fetch('update_customer.php', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ id, customer: customerData })
+                    });
+                    if (!response.ok) throw new Error('Failed to update customer');
+                    const customer = customersData.find(c => c.id === id);
+                    if(customer) Object.assign(customer, customerData);
+                    renderCustomersTable();
+                } catch (error) { console.error('Update Error:', error); alert('Could not update customer.'); }
+            }
+
+            async function createCustomer(customerData) {
+                try {
+                    const response = await fetch('create_customer.php', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(customerData)
+                    });
+                    if (!response.ok) throw new Error('Failed to create customer');
+                    const result = await response.json();
+                    customersData.unshift(result.customer); // Add new customer to the beginning
+                    renderCustomersTable();
+                } catch (error) { console.error('Create Error:', error); alert('Could not create customer.'); }
+            }
+
+            eles.offersList.addEventListener('change', e => {
+                if (e.target.classList.contains('status-select')) {
+                    const id = e.target.dataset.id;
+                    const status = e.target.value;
+                    updateOfferStatus(id, status);
+                } else if (e.target.classList.contains('offer-checkbox')) {
+                    // If an individual checkbox is clicked, uncheck "check all" if not all are checked
+                    if (!e.target.checked) {
+                        eles.checkAllOffers.checked = false;
+                    } else {
+                        // Check "check all" if all individual checkboxes are now checked
+                        const allChecked = Array.from(document.querySelectorAll('.offer-checkbox')).every(cb => cb.checked);
+                        if (allChecked) {
+                            eles.checkAllOffers.checked = true;
+                        }
+                    }
+                }
+            });
+
+            eles.customersList.addEventListener('change', e => {
+                if (e.target.classList.contains('customer-checkbox')) {
+                    if (!e.target.checked) {
+                        eles.checkAllCustomers.checked = false;
+                    } else {
+                        const allChecked = Array.from(document.querySelectorAll('.customer-checkbox')).every(cb => cb.checked);
+                        if (allChecked) {
+                            eles.checkAllCustomers.checked = true;
+                        }
+                    }
+                }
+            });
+
+            eles.checkAllOffers.addEventListener('change', () => {
+                const isChecked = eles.checkAllOffers.checked;
+                document.querySelectorAll('.offer-checkbox').forEach(checkbox => {
+                    checkbox.checked = isChecked;
+                });
+            });
+
+            eles.checkAllCustomers.addEventListener('change', () => {
+                const isChecked = eles.checkAllCustomers.checked;
+                document.querySelectorAll('.customer-checkbox').forEach(checkbox => {
+                    checkbox.checked = isChecked;
+                });
+            });
+
+            eles.offerSearch.addEventListener('keyup', renderOffersTable);
+            eles.customerSearch.addEventListener('keyup', renderCustomersTable);
+
+            eles.offersList.addEventListener('click', e => {
+                if (e.target.classList.contains('view-offer-btn')) {
+                    const id = e.target.dataset.id;
+                    const offer = offersData.find(o => o.id === id);
+                    if (offer) viewOfferDetails(offer);
+                } else if (e.target.classList.contains('export-offer-img-btn')) {
+                    const id = e.target.dataset.id;
+                    exportOfferAsImage(id);
+                }
+            });
+
+            eles.customersTableBody.addEventListener('click', e => {
+                if (e.target.classList.contains('edit-customer-btn')) {
+                    const id = e.target.dataset.id;
+                    const customer = customersData.find(c => c.id === id);
+                    if (customer) openModal('customer', customersData.indexOf(customer));
+                } else if (e.target.classList.contains('delete-customer-btn')) {
+                    const id = e.target.dataset.id;
+                    if (confirm('Are you sure you want to delete this customer?')) {
+                        deleteCustomers([id]);
+                    }
+                }
+            });
+
+            function viewOfferDetails(offer) {
+                eles.modalTitle.innerText = `Offer Details: ${offer.id}`;
+                let detailsHtml = `
+                    <p><strong>Customer:</strong> ${offer.customer.name} (${offer.customer.email}, ${offer.customer.mobile})</p>
+                    <p><strong>Date:</strong> ${new Date(offer.timestamp).toLocaleString()}</p>
+                    <p><strong>Status:</strong> <span class="status-badge ${getStatusColorClass(offer.status)}">${offer.status}</span></p>
+                    <h4 class="text-lg font-bold mt-4 mb-2">Plan Details:</h4>
+                    <p>${offer.plan.name}: AED ${offer.plan.price.toFixed(2)}</p>
+                `;
+                if (offer.services && offer.services.length > 0) {
+                    detailsHtml += `<h4 class="text-lg font-bold mt-4 mb-2">Services:</h4><ul>`;
+                    offer.services.forEach(service => {
+                        detailsHtml += `<li>${service.name} (Qty: ${service.qty}) - AED ${service.price.toFixed(2)}</li>`;
+                    });
+                    detailsHtml += `</ul>`;
+                }
+                detailsHtml += `<h3 class="text-xl font-bold mt-4">Total Price: AED ${offer.totalPrice.toFixed(2)}</h3>`;
+                eles.modalBody.innerHTML = detailsHtml;
+                eles.modalSave.classList.add('hidden'); // Hide save button for view-only modal
+                eles.modal.classList.add('show');
+
+                // Add export button to modal footer for view-only offers
+                const exportImgBtn = document.createElement('button');
+                exportImgBtn.id = 'export-offer-img-modal-btn';
+                exportImgBtn.className = 'bg-purple-600 text-white py-2 px-5 rounded-lg hover:bg-purple-700 font-semibold';
+                exportImgBtn.innerHTML = '<i class="fas fa-image mr-2"></i>Export as Image';
+                exportImgBtn.onclick = () => exportOfferAsImage(offer.id);
+                eles.modalSave.parentNode.prepend(exportImgBtn);
+            }
+
+            function getStatusColorClass(status) {
+                const colors = {
+                    'Awaiting Payment': 'bg-yellow-100 text-yellow-800',
+                    'Payment Confirmed': 'bg-blue-100 text-blue-800',
+                    'Contract Sent': 'bg-indigo-100 text-indigo-800',
+                    'In Progress': 'bg-purple-100 text-purple-800',
+                    'Completed': 'bg-green-100 text-green-800',
+                    'Cancelled': 'bg-red-100 text-red-800'
+                };
+                return colors[status] || '';
+            }
+
+            function renderCards(container, items, type) {
+                container.innerHTML = '';
+                if (items.length === 0) {
+                    container.innerHTML = `<p class="text-gray-500 col-span-full text-center">No ${type}s found.</p>`;
+                    return;
+                }
+                items.forEach(item => {
+                    const originalIndex = (type === 'service' ? servicesData : plansData).findIndex(i => i === item);
+                    const card = document.createElement('div');
+                    card.className = 'bg-white rounded-lg shadow-md p-5 flex flex-col transition-all hover:shadow-xl hover:-translate-y-1';
+                    card.innerHTML = (type === 'service' ? `
+                        <div class="flex-1">
+                            <p class="text-sm text-indigo-500 font-semibold">${item.category}</p>
+                            <h4 class="text-lg font-bold text-gray-800 mt-1">${item.name}</h4>
+                            <p class="text-3xl font-extrabold text-gray-900 my-4">AED ${item.price}</p>
+                        </div>` : `
+                        <div class="flex-1">
+                            <h4 class="text-lg font-bold text-gray-800">${item.name}</h4>
+                            <p class="text-3xl font-extrabold text-gray-900 my-4">AED ${item.price}</p>
+                            <p class="text-md font-semibold text-green-600">${item.discount * 100}% Discount</p>
+                        </div>`) + `
+                        <div class="mt-4 flex justify-end space-x-3">
+                            <button class="edit-btn text-blue-500 hover:text-blue-700 font-semibold" data-type="${type}" data-index="${originalIndex}"><i class="fas fa-edit mr-1"></i> Edit</button>
+                            <button class="remove-btn text-red-500 hover:text-red-700 font-semibold" data-type="${type}" data-index="${originalIndex}"><i class="fas fa-trash mr-1"></i> Remove</button>
+                        </div>`;
+                    container.appendChild(card);
+                });
+            }
+
+            function openModal(type, index) {
+                currentEdit = { type, index };
+                eles.modal.classList.add('show');
+                eles.modalSave.classList.remove('hidden'); // Show save button for edit modal
+                const isNew = index === -1;
+                if (type === 'service') {
+                    const service = isNew ? { name: '', price: 0, category: '', description: '', deliverables: '', trail: false } : servicesData[index];
+                    eles.modalTitle.innerText = isNew ? 'Add Service' : 'Edit Service';
+                    eles.modalBody.innerHTML = `
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div><label class="block text-sm font-medium mb-1">Name</label><input type="text" id="modal-name" value="${service.name}" class="w-full p-2 border rounded-lg"></div>
+                            <div><label class="block text-sm font-medium mb-1">Price</label><input type="number" id="modal-price" value="${service.price}" class="w-full p-2 border rounded-lg"></div>
+                            <div><label class="block text-sm font-medium mb-1">Category</label><input type="text" id="modal-category" value="${service.category}" class="w-full p-2 border rounded-lg"></div>
+                            <div class="md:col-span-2"><label class="block text-sm font-medium mb-1">Description</label><textarea id="modal-description" class="w-full p-2 border rounded-lg">${service.description}</textarea></div>
+                            <div class="md:col-span-2"><label class="block text-sm font-medium mb-1">Deliverables</label><textarea id="modal-deliverables" class="w-full p-2 border rounded-lg">${service.deliverables}</textarea></div>
+                            <div class="flex items-center"><input type="checkbox" id="modal-trail" ${service.trail ? 'checked' : ''} class="h-4 w-4 rounded"><label for="modal-trail" class="ml-2">Trial Service</label></div>
+                        </div>`;
+                } else if (type === 'plan') {
+                    const plan = isNew ? { name: '', price: 0, discount: 0 } : plansData[index];
+                    eles.modalTitle.innerText = isNew ? 'Add Plan' : 'Edit Plan';
+                    eles.modalBody.innerHTML = `
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div><label class="block text-sm font-medium mb-1">Name</label><input type="text" id="modal-name" value="${plan.name}" class="w-full p-2 border rounded-lg"></div>
+                            <div><label class="block text-sm font-medium mb-1">Price</label><input type="number" id="modal-price" value="${plan.price}" class="w-full p-2 border rounded-lg"></div>
+                            <div><label class="block text-sm font-medium mb-1">Discount (decimal)</label><input type="number" step="0.01" id="modal-discount" value="${plan.discount}" class="w-full p-2 border rounded-lg"></div>
+                        </div>`;
+                } else if (type === 'customer') {
+                    const customer = isNew ? { name: '', email: '', mobile: '' } : customersData[index];
+                    eles.modalTitle.innerText = isNew ? 'Add Customer' : 'Edit Customer';
+                    eles.modalBody.innerHTML = `
+                        <div class="grid grid-cols-1 gap-4">
+                            <div><label class="block text-sm font-medium mb-1">Name</label><input type="text" id="modal-customer-name" value="${customer.name}" class="w-full p-2 border rounded-lg"></div>
+                            <div><label class="block text-sm font-medium mb-1">Email</label><input type="email" id="modal-customer-email" value="${customer.email}" class="w-full p-2 border rounded-lg"></div>
+                            <div><label class="block text-sm font-medium mb-1">Mobile</label><input type="text" id="modal-customer-mobile" value="${customer.mobile}" class="w-full p-2 border rounded-lg"></div>
+                        </div>`;
+                }
+            }
+
+            function closeModal() {
+                eles.modal.classList.remove('show');
+                // Remove the export button when closing the modal to prevent duplicates
+                const exportBtn = document.getElementById('export-offer-img-modal-btn');
+                if (exportBtn) exportBtn.remove();
+            }
+
+            async function exportOfferAsImage(offerId) {
+                const offer = offersData.find(o => o.id === offerId);
+                if (!offer) { alert('Offer not found!'); return; }
+
+                const tempDiv = document.createElement('div');
+                tempDiv.style.background = 'white';
+                tempDiv.style.padding = '20px';
+                tempDiv.style.fontFamily = 'Inter, sans-serif';
+                tempDiv.style.width = '800px'; // Fixed width for consistent image generation
+                tempDiv.style.boxShadow = '0 4px 6px rgba(0,0,0,0.1)';
+                tempDiv.style.borderRadius = '8px';
+
+                let detailsHtml = `
+                    <h2 style="font-size: 24px; font-weight: bold; margin-bottom: 15px; color: #1f2937;">Offer Details: ${offer.id}</h2>
+                    <p style="margin-bottom: 5px;"><strong>Customer:</strong> ${offer.customer.name} (${offer.customer.email}, ${offer.customer.mobile})</p>
+                    <p style="margin-bottom: 5px;"><strong>Date:</strong> ${new Date(offer.timestamp).toLocaleString()}</p>
+                    <p style="margin-bottom: 15px;"><strong>Status:</strong> <span class="status-badge ${getStatusColorClass(offer.status)}">${offer.status}</span></p>
+                    <h4 style="font-size: 18px; font-weight: bold; margin-top: 20px; margin-bottom: 10px; color: #1f2937;">Plan Details:</h4>
+                    <p style="margin-bottom: 5px;">${offer.plan.name}: AED ${offer.plan.price.toFixed(2)}</p>
+                `;
+                if (offer.services && offer.services.length > 0) {
+                    detailsHtml += `<h4 style="font-size: 18px; font-weight: bold; margin-top: 20px; margin-bottom: 10px; color: #1f2937;">Services:</h4><ul style="list-style: none; padding: 0;">`;
+                    offer.services.forEach(service => {
+                        detailsHtml += `<li style="margin-bottom: 5px;">${service.name} (Qty: ${service.qty}) - AED ${service.price.toFixed(2)}</li>`;
+                    });
+                    detailsHtml += `</ul>`;
+                }
+                detailsHtml += `<h3 class="text-xl font-bold mt-4">Total Price: AED ${offer.totalPrice.toFixed(2)}</h3>`;
+
+                tempDiv.innerHTML = detailsHtml;
+                document.body.appendChild(tempDiv); // Append to body to be rendered for html2canvas
+
+                try {
+                    const canvas = await html2canvas(tempDiv, { scale: 2 }); // Scale for better quality
+                    const image = canvas.toDataURL('image/png');
+                    const link = document.createElement('a');
+                    link.href = image;
+                    link.download = `offer_${offer.id}.png`;
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                } catch (error) {
+                    console.error('Error exporting offer as image:', error);
+                    alert('Failed to export offer as image.');
+                } finally {
+                    document.body.removeChild(tempDiv); // Clean up the temporary div
+                }
+            }
+
+            function handleSave() {
+                const { type, index } = currentEdit;
+                if (type === 'service') {
+                    const updated = {
+                        name: document.getElementById('modal-name').value,
+                        price: parseFloat(document.getElementById('modal-price').value) || 0,
+                        category: document.getElementById('modal-category').value,
+                        description: document.getElementById('modal-description').value,
+                        deliverables: document.getElementById('modal-deliverables').value,
+                        trail: document.getElementById('modal-trail').checked,
+                    };
+                    if (index === -1) servicesData.push(updated); else servicesData[index] = updated;
+                } else if (type === 'plan') {
+                    const updated = {
+                        name: document.getElementById('modal-name').value,
+                        price: parseFloat(document.getElementById('modal-price').value) || 0,
+                        discount: parseFloat(document.getElementById('modal-discount').value) || 0,
+                    };
+                    if (index === -1) plansData.push(updated); else plansData[index] = updated;
+                } else if (type === 'customer') {
+                    const updated = {
+                        name: document.getElementById('modal-customer-name').value,
+                        email: document.getElementById('modal-customer-email').value,
+                        mobile: document.getElementById('modal-customer-mobile').value,
+                    };
+                    if (index === -1) {
+                        createCustomer(updated);
+                    } else {
+                        updateCustomer(customersData[index].id, updated);
+                    }
+                }
+                render();
+                closeModal();
+            }
+
+            function handleRemove(type, index) {
+                if (confirm(`Are you sure you want to remove this ${type}?`)) {
+                    if (type === 'service') servicesData.splice(index, 1);
+                    else plansData.splice(index, 1);
+                    render();
+                }
+            }
+
+            async function saveChanges() {
+                eles.saveChangesBtn.disabled = true;
+                eles.saveChangesBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Saving...';
+                try {
+                    const response = await fetch('update_services.php', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ services: servicesData, plans: plansData })
+                    });
+                    if (!response.ok) throw new Error('Server responded with an error.');
+                    alert('Changes saved successfully!');
+                } catch (error) {
+                    console.error('Error saving changes:', error);
+                    alert('An error occurred while saving changes.');
+                } finally {
+                    eles.saveChangesBtn.disabled = false;
+                    eles.saveChangesBtn.innerHTML = '<i class="fas fa-save mr-2"></i>Save All Changes';
+                }
+            }
+
+            function switchView(view) {
+                currentView = view;
+                Object.values(eles.navs).forEach(n => n.classList.remove('active'));
+                eles.navs[view].classList.add('active');
+                Object.values(eles.sections).forEach(s => s.classList.add('hidden'));
+                eles.sections[view].classList.remove('hidden');
+                eles.headerTitle.innerText = `Manage ${view.charAt(0).toUpperCase() + view.slice(1)}`;
+                
+                // Show/hide Save Changes button and Add Item button based on view
+                if (view === 'services' || view === 'plans') {
+                    eles.saveChangesBtn.style.display = 'flex';
+                    eles.addItemBtn.style.display = 'flex';
+                    eles.addBtnText.innerText = `Add ${view.slice(0, -1).charAt(0).toUpperCase() + view.slice(0, -1).slice(1)}`;
+                } else {
+                    eles.saveChangesBtn.style.display = 'none';
+                    eles.addItemBtn.style.display = 'none';
+                }
+
+                // For new sections, ensure add/save buttons are hidden
+                if (['users', 'sales', 'crm'].includes(view)) {
+                    eles.saveChangesBtn.style.display = 'none';
+                    eles.addItemBtn.style.display = 'none';
+                } else if (view === 'customers') {
+                    eles.saveChangesBtn.style.display = 'none';
+                    eles.addItemBtn.style.display = 'none'; // Customers has its own add button
+                }
+
+                render();
+            }
+
+            Object.keys(eles.navs).forEach(key => {
+                eles.navs[key].addEventListener('click', e => { e.preventDefault(); switchView(key); });
+            });
+
+            eles.addItemBtn.addEventListener('click', () => openModal(currentView.slice(0, -1), -1));
+            if (eles.addCustomerBtn) {
+                eles.addCustomerBtn.addEventListener('click', () => openModal('customer', -1));
+            }
+            eles.modalSave.addEventListener('click', handleSave);
+            eles.saveChangesBtn.addEventListener('click', saveChanges);
+            eles.logoutBtn.addEventListener('click', () => { sessionStorage.removeItem('isAdminAuthenticated'); window.location.href = 'login.html'; });
+
+            document.body.addEventListener('click', e => {
+                const btn = e.target.closest('button');
+                if (!btn) return;
+                const { type, index } = btn.dataset;
+                if (btn.classList.contains('edit-btn')) openModal(type, parseInt(index));
+                if (btn.classList.contains('remove-btn')) handleRemove(type, parseInt(index));
+                if (btn.classList.contains('export-offer-img-btn')) {
+                    const id = btn.dataset.id;
+                    exportOfferAsImage(id);
+                }
+            });
+
+            eles.exportOffersBtn.addEventListener('click', () => {
+                const selectedOfferIds = Array.from(document.querySelectorAll('.offer-checkbox:checked'))
+                                            .map(cb => cb.dataset.id);
+                if (selectedOfferIds.length === 0) {
+                    alert('Please select at least one offer to export.');
+                    return;
+                }
+                if (confirm(`Export ${selectedOfferIds.length} selected offers as images?`)) {
+                    selectedOfferIds.forEach(id => exportOfferAsImage(id));
+                }
+            });
+
+            eles.deleteOffersBtn.addEventListener('click', () => {
+                const selectedOfferIds = Array.from(document.querySelectorAll('.offer-checkbox:checked'))
+                                            .map(cb => cb.dataset.id);
+                if (selectedOfferIds.length === 0) {
+                    alert('Please select at least one offer to delete.');
+                    return;
+                }
+                if (confirm(`Are you sure you want to delete ${selectedOfferIds.length} selected offers? This action cannot be undone.`)) {
+                    deleteOffers(selectedOfferIds);
+                }
+            });
+
+            eles.exportCustomersBtn.addEventListener('click', () => {
+                const selectedCustomerIds = Array.from(document.querySelectorAll('.customer-checkbox:checked'))
+                                            .map(cb => cb.dataset.id);
+                if (selectedCustomerIds.length === 0) {
+                    alert('Please select at least one customer to export.');
+                    return;
+                }
+                if (confirm(`Export ${selectedCustomerIds.length} selected customers?`)) {
+                    exportCustomers(selectedCustomerIds);
+                }
+            });
+
+            eles.deleteCustomersBtn.addEventListener('click', () => {
+                const selectedCustomerIds = Array.from(document.querySelectorAll('.customer-checkbox:checked'))
+                                            .map(cb => cb.dataset.id);
+                if (selectedCustomerIds.length === 0) {
+                    alert('Please select at least one customer to delete.');
+                    return;
+                }
+                if (confirm(`Are you sure you want to delete ${selectedCustomerIds.length} selected customers? This action cannot be undone.`)) {
+                    deleteCustomers(selectedCustomerIds);
+                }
+            });
+
+            fetchData();
+            switchView(currentView); // Set initial view
+        });
+
+        async function deleteOffers(ids) {
+            try {
+                const response = await fetch('delete_offers.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ ids })
+                });
+                const result = await response.json();
+                if (result.success) {
+                    alert(result.message);
+                    fetchData(); // Re-fetch data to update the table
+                } else {
+                    alert('Error deleting offers: ' + result.message);
+                }
+            } catch (error) {
+                console.error('Error deleting offers:', error);
+                alert('An error occurred while deleting offers.');
+            }
+        }
+
+        async function deleteCustomers(ids) {
+            try {
+                const response = await fetch('delete_customers.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ ids })
+                });
+                const result = await response.json();
+                if (result.success) {
+                    alert(result.message);
+                    fetchData(); // Re-fetch data to update the table
+                } else {
+                    alert('Error deleting customers: ' + result.message);
+                }
+            } catch (error) {
+                console.error('Error deleting customers:', error);
+                alert('An error occurred while deleting customers.');
+            }
+        }
+
+        function exportCustomers(ids) {
+            const customersToExport = customersData.filter(c => ids.includes(c.id));
+            if (customersToExport.length === 0) {
+                alert('No customers selected for export.');
+                return;
+            }
+
+            const csvHeader = ["ID", "Name", "Email", "Mobile", "Date Added"];
+            const csvRows = customersToExport.map(c => [
+                `"${c.id}"`,
+                `"${c.name}"`,
+                `"${c.email}"`,
+                `"${c.mobile}"`,
+                `"${new Date(c.timestamp).toLocaleDateString()}"`
+            ]);
+
+            const csvContent = [
+                csvHeader.join(','),
+                ...csvRows.map(row => row.join(','))
+            ].join('\n');
+
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = 'customers.csv';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+    </script>
+</body>
+</html>
