@@ -1,0 +1,248 @@
+[
+    {
+        "customer": {
+            "name": "Ahmed Mahmoud",
+            "email": "eng.ahmed18@gmail.com",
+            "mobile": "+9710544104475"
+        },
+        "plan": {
+            "name": "Custom Bundle",
+            "price": 0
+        },
+        "services": [],
+        "totalPrice": 0,
+        "id": "OFFER-1751279050-E50FE6",
+        "status": "Cancelled",
+        "timestamp": "2025-06-30 12:24:10"
+    },
+    {
+        "customer": {
+            "name": "Thaerah",
+            "email": "thAERAH@GMAIL.COM",
+            "mobile": "+971544545485"
+        },
+        "plan": {
+            "name": "Custom Bundle",
+            "price": 0
+        },
+        "services": [
+            {
+                "name": "\u2702\ufe0f Pro Video Editing \u2013 Multi-part or Effects",
+                "qty": 2,
+                "price": 300
+            },
+            {
+                "name": "\u2702\ufe0f Reels Editing (IG\/TikTok \u2013 60s)",
+                "qty": 1,
+                "price": 150
+            },
+            {
+                "name": "\u2702\ufe0f Subtitling Video (Arabic\/English)",
+                "qty": 1,
+                "price": 100
+            }
+        ],
+        "totalPrice": 850,
+        "id": "OFFER-1751279698-525BFE",
+        "status": "Cancelled",
+        "timestamp": "2025-06-30 12:34:58"
+    },
+    {
+        "customer": {
+            "name": "Ahmed Mahmoud",
+            "email": "eng.ahmed18@gmail.com",
+            "mobile": "+9710544104475"
+        },
+        "plan": {
+            "name": "Super",
+            "price": 4600
+        },
+        "services": [
+            {
+                "name": "\ud83c\udfe2 Listing Renewal & Performance Reports",
+                "qty": 2,
+                "price": 137.5
+            }
+        ],
+        "totalPrice": 4875,
+        "id": "OFFER-1751280966-53A108",
+        "status": "Awaiting Payment",
+        "timestamp": "2025-06-30 12:56:06"
+    },
+    {
+        "customer": {
+            "name": "SHYMAA ASHRAF FATHY",
+            "email": "eng.ahmed18@gmail.com",
+            "mobile": "+9710544104475"
+        },
+        "plan": {
+            "name": "Legend",
+            "price": 7500
+        },
+        "services": [],
+        "totalPrice": 7500,
+        "id": "OFFER-1751281752-C96A0F",
+        "status": "Awaiting Payment",
+        "timestamp": "2025-06-30 13:09:12"
+    },
+    {
+        "customer": {
+            "name": "Ahmed Mahmoud",
+            "email": "eng.ahmed18@gmail.com",
+            "mobile": "+9710544104475"
+        },
+        "plan": {
+            "name": "Pro",
+            "price": 2900
+        },
+        "services": [
+            {
+                "name": "\ud83d\udcf8 Property Photo Shoot (Interior + Exterior)",
+                "qty": 1,
+                "price": 350
+            },
+            {
+                "name": "\ud83d\udcf2 Property Listing Text (Bayut \/ PF)",
+                "qty": 1,
+                "price": 70
+            },
+            {
+                "name": "\ud83d\udcc4 Landing Page Design (Lead Capture) + domain.com",
+                "qty": 1,
+                "price": 1050
+            }
+        ],
+        "totalPrice": 4370,
+        "id": "OFFER-1751282944-6CFA6F",
+        "status": "Awaiting Payment",
+        "timestamp": "2025-06-30 13:29:04"
+    },
+    {
+        "customer": {
+            "name": "Ahmed Mahmoud",
+            "email": "eng.ahmed18@gmail.com",
+            "mobile": "+9710544104475"
+        },
+        "plan": {
+            "name": "Pro",
+            "price": 2900
+        },
+        "services": [
+            {
+                "name": "\ud83d\udcf8 Property Photo Shoot (Interior + Exterior)",
+                "qty": 1,
+                "price": 350
+            },
+            {
+                "name": "\ud83d\udcf2 Property Listing Text (Bayut \/ PF)",
+                "qty": 1,
+                "price": 70
+            },
+            {
+                "name": "\ud83d\udcc4 Landing Page Design (Lead Capture) + domain.com",
+                "qty": 1,
+                "price": 1050
+            }
+        ],
+        "totalPrice": 4370,
+        "id": "OFFER-1751284833-AE1D36",
+        "status": "Awaiting Payment",
+        "timestamp": "2025-06-30 14:00:33"
+    },
+    {
+        "customer": {
+            "name": "SHYMAA ASHRAF FATHY",
+            "email": "eng.ahmed18@gmail.com",
+            "mobile": "+9710544104475"
+        },
+        "plan": {
+            "name": "Basic",
+            "price": 1850
+        },
+        "services": [
+            {
+                "name": "\ud83d\udcf2 Property Listing Text (Bayut \/ PF)",
+                "qty": 1,
+                "price": 80
+            },
+            {
+                "name": "\ud83d\udcf8 Property Photo Shoot (Interior + Exterior)",
+                "qty": 1,
+                "price": 400
+            },
+            {
+                "name": "\ud83d\udcdd Ad Copy \u2013 Property or Offer",
+                "qty": 1,
+                "price": 64
+            }
+        ],
+        "totalPrice": 2394,
+        "id": "OFFER-1751306369-66728F",
+        "status": "Awaiting Payment",
+        "timestamp": "2025-06-30 19:59:29"
+    },
+    {
+        "customer": {
+            "name": "Ahmed Mahmoud",
+            "email": "eng.ahmed18@gmail.com",
+            "mobile": "+9710544104475"
+        },
+        "plan": {
+            "name": "Custom Bundle",
+            "price": 0
+        },
+        "services": [],
+        "totalPrice": 0,
+        "id": "OFFER-Y4PFCW",
+        "status": "Awaiting Payment",
+        "timestamp": "2025-06-30 20:24:04"
+    },
+    {
+        "customer": {
+            "name": "Ahmed Mahmoud",
+            "email": "eng.ahmed18@gmail.com",
+            "mobile": "+9710544104475"
+        },
+        "plan": {
+            "name": "Basic",
+            "price": 1850
+        },
+        "services": [],
+        "totalPrice": 1850,
+        "id": "OFFER-6P9SZS",
+        "status": "Awaiting Payment",
+        "timestamp": "2025-06-30 20:30:15"
+    },
+    {
+        "customer": {
+            "name": "Ahmed Mahmoud",
+            "email": "eng.ahmed18@gmail.com",
+            "mobile": "+9710544104475"
+        },
+        "plan": {
+            "name": "Custom Bundle",
+            "price": 0
+        },
+        "services": [],
+        "totalPrice": 0,
+        "id": "OFFER-1751309503-FDFBB1",
+        "status": "Awaiting Payment",
+        "timestamp": "2025-06-30 20:51:43"
+    },
+    {
+        "customer": {
+            "name": "SHYMAA ASHRAF FATHY",
+            "email": "eng.ahmed18@gmail.com",
+            "mobile": "+9710544104475"
+        },
+        "plan": {
+            "name": "Custom Bundle",
+            "price": 0
+        },
+        "services": [],
+        "totalPrice": 0,
+        "id": "OFFER-1751309510-7AA02A",
+        "status": "Awaiting Payment",
+        "timestamp": "2025-06-30 20:51:50"
+    }
+]

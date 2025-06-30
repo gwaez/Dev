@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .modal { display: none; }
+        .modal.show { display: flex; }
+        .fade-in { animation: fadeIn 0.3s ease-out; }
+        .fade-out { animation: fadeOut 0.3s ease-in; }
+        @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+        @keyframes fadeOut { from { opacity: 1; transform: scale(1); } to { opacity: 0; transform: scale(0.95); } }
+    </style>
+</head>
+<body class="bg-gray-50">
+
+    <div class="flex h-screen bg-gray-50">
+        <!-- Sidebar -->
+        <div class="w-64 bg-white shadow-md">
+            <div class="p-6">
+                <h1 class="text-2xl font-bold text-indigo-600">Admin Panel</h1>
+            </div>
+            <nav class="mt-6">
+                <a href="#services" id="nav-services" class="flex items-center px-6 py-3 text-gray-700 bg-gray-200">
+                    <i class="fas fa-cogs mr-3"></i> Services
+                </a>
+                <a href="#plans" id="nav-plans" class="flex items-center px-6 py-3 text-gray-600 hover:bg-gray-100">
+                    <i class="fas fa-clipboard-list mr-3"></i> Plans
+                </a>
+                <a href="#" id="logout-btn" class="flex items-center px-6 py-3 text-gray-600 hover:bg-gray-100 mt-4">
+                    <i class="fas fa-sign-out-alt mr-3"></i> Logout
+                </a>
+            </nav>
+        </div>
+
+        <!-- Main Content -->
+        <div class="flex-1 flex flex-col overflow-hidden">
+            <main class="flex-1 overflow-x-hidden overflow-y-auto bg-gray-50 p-8">
+                <!-- Services Section -->
+                <div id="services-section">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-3xl font-bold text-gray-800">Manage Services</h2>
+                        <div class="flex items-center space-x-4">
+                            <div class="relative">
+                                <input type="text" id="service-search" placeholder="Search services..." class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                                <i class="fas fa-search absolute top-3 right-4 text-gray-400"></i>
+                            </div>
+                            <button id="add-service-btn" class="bg-indigo-600 text-white py-2 px-4 rounded-lg hover:bg-indigo-700 shadow-sm flex items-center"><i class="fas fa-plus mr-2"></i>Add Service</button>
+                        </div>
+                    </div>
+                    <div id="services-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <!-- Service cards will be injected here -->
+                    </div>
+                </div>
+
+                <!-- Plans Section (hidden by default) -->
+                <div id="plans-section" class="hidden">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-3xl font-bold text-gray-800">Manage Plans</h2>
+                        <div class="flex items-center space-x-4">
+                            <div class="relative">
+                                <input type="text" id="plan-search" placeholder="Search plans..." class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                                <i class="fas fa-search absolute top-3 right-4 text-gray-400"></i>
+                            </div>
+                            <button id="add-plan-btn" class="bg-indigo-600 text-white py-2 px-4 rounded-lg hover:bg-indigo-700 shadow-sm flex items-center"><i class="fas fa-plus mr-2"></i>Add Plan</button>
+                        </div>
+                    </div>
+                    <div id="plans-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <!-- Plan cards will be injected here -->
+                    </div>
+                </div>
+            </main>
+            <footer class="bg-white shadow-inner p-4">
+                <button id="save-changes-btn" class="w-full bg-green-600 text-white py-3 px-6 rounded-lg text-lg font-semibold hover:bg-green-700 shadow-md flex items-center justify-center">
+                    <i class="fas fa-save mr-2"></i>Save All Changes
+                </button>
+            </footer>
+        </div>
+    </div>
+
+    <!-- Modal -->
+    <div id="edit-modal" class="modal fixed inset-0 bg-gray-900 bg-opacity-50 items-center justify-center p-4">
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-2xl fade-in">
+            <div class="p-6 border-b">
+                <h3 id="modal-title" class="text-2xl font-bold">Edit Item</h3>
+            </div>
+            <div id="modal-body" class="p-6 max-h-96 overflow-y-auto">
+                <!-- Form fields will be injected here -->
+            </div>
+            <div class="p-6 bg-gray-50 flex justify-end space-x-4">
+                <button id="modal-cancel" class="bg-gray-200 text-gray-800 py-2 px-4 rounded-lg hover:bg-gray-300">Cancel</button>
+                <button id="modal-save" class="bg-indigo-600 text-white py-2 px-4 rounded-lg hover:bg-indigo-700">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Authentication Check
+            if (sessionStorage.getItem('isAdminAuthenticated') !== 'true') {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            // Page Elements
+            const servicesList = document.getElementById('services-list');
+            const plansList = document.getElementById('plans-list');
+            const addServiceBtn = document.getElementById('add-service-btn');
+            const addPlanBtn = document.getElementById('add-plan-btn');
+            const saveChangesBtn = document.getElementById('save-changes-btn');
+            const logoutBtn = document.getElementById('logout-btn');
+            const serviceSearch = document.getElementById('service-search');
+            const planSearch = document.getElementById('plan-search');
+
+            // Navigation
+            const navServices = document.getElementById('nav-services');
+            const navPlans = document.getElementById('nav-plans');
+            const servicesSection = document.getElementById('services-section');
+            const plansSection = document.getElementById('plans-section');
+
+            // Modal Elements
+            const modal = document.getElementById('edit-modal');
+            const modalTitle = document.getElementById('modal-title');
+            const modalBody = document.getElementById('modal-body');
+            const modalSave = document.getElementById('modal-save');
+            const modalCancel = document.getElementById('modal-cancel');
+
+            let servicesData = [];
+            let plansData = [];
+            let currentEdit = { type: null, index: -1 };
+
+            // --- DATA FETCHING ---
+            async function fetchData() {
+                try {
+                    const response = await fetch('services.json?t=' + new Date().getTime()); // Prevent caching
+                    const data = await response.json();
+                    servicesData = data.services;
+                    plansData = data.plans;
+                    renderServices();
+                    renderPlans();
+                } catch (error) {
+                    console.error("Failed to fetch data:", error);
+                    alert("Could not load data. Please check the console for errors.");
+                }
+            }
+
+            // --- RENDERING ---
+            function renderServices(servicesToRender = servicesData) {
+                servicesList.innerHTML = '';
+                servicesToRender.forEach(service => {
+                    const originalIndex = servicesData.findIndex(s => s === service);
+                    const card = document.createElement('div');
+                    card.className = 'bg-white rounded-lg shadow-md p-5 flex flex-col';
+                    card.innerHTML = `
+                        <h4 class="text-lg font-bold text-gray-800 truncate">${service.name}</h4>
+                        <p class="text-sm text-gray-500">${service.category}</p>
+                        <p class="text-2xl font-bold text-indigo-600 my-3">AED ${service.price}</p>
+                        <div class="mt-auto flex justify-end space-x-2">
+                            <button class="edit-btn text-blue-500 hover:text-blue-700" data-type="service" data-index="${originalIndex}"><i class="fas fa-edit"></i> Edit</button>
+                            <button class="remove-btn text-red-500 hover:text-red-700" data-type="service" data-index="${originalIndex}"><i class="fas fa-trash"></i> Remove</button>
+                        </div>
+                    `;
+                    servicesList.appendChild(card);
+                });
+            }
+
+            function renderPlans(plansToRender = plansData) {
+                plansList.innerHTML = '';
+                plansToRender.forEach(plan => {
+                    const originalIndex = plansData.findIndex(p => p === plan);
+                    const card = document.createElement('div');
+                    card.className = 'bg-white rounded-lg shadow-md p-5 flex flex-col';
+                    card.innerHTML = `
+                        <h4 class="text-lg font-bold text-gray-800">${plan.name}</h4>
+                        <p class="text-2xl font-bold text-indigo-600 my-3">AED ${plan.price}</p>
+                        <p class="text-md font-semibold text-green-600">${plan.discount * 100}% Discount</p>
+                        <div class="mt-auto flex justify-end space-x-2">
+                            <button class="edit-btn text-blue-500 hover:text-blue-700" data-type="plan" data-index="${originalIndex}"><i class="fas fa-edit"></i> Edit</button>
+                            <button class="remove-btn text-red-500 hover:text-red-700" data-type="plan" data-index="${originalIndex}"><i class="fas fa-trash"></i> Remove</button>
+                        </div>
+                    `;
+                    plansList.appendChild(card);
+                });
+            }
+
+            // --- MODAL & EDITING ---
+            function openModal(type, index) {
+                currentEdit = { type, index };
+                modal.classList.add('show');
+                if (type === 'service') {
+                    const service = index === -1 ? { name: '', price: 0, category: '', description: '', deliverables: '', trail: false } : servicesData[index];
+                    modalTitle.innerText = index === -1 ? 'Add Service' : 'Edit Service';
+                    modalBody.innerHTML = `
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div><label class="block text-sm font-medium">Name</label><input type="text" id="modal-name" value="${service.name}" class="mt-1 w-full p-2 border rounded"></div>
+                            <div><label class="block text-sm font-medium">Price</label><input type="number" id="modal-price" value="${service.price}" class="mt-1 w-full p-2 border rounded"></div>
+                            <div><label class="block text-sm font-medium">Category</label><input type="text" id="modal-category" value="${service.category}" class="mt-1 w-full p-2 border rounded"></div>
+                            <div class="md:col-span-2"><label class="block text-sm font-medium">Description</label><textarea id="modal-description" class="mt-1 w-full p-2 border rounded">${service.description}</textarea></div>
+                            <div class="md:col-span-2"><label class="block text-sm font-medium">Deliverables</label><textarea id="modal-deliverables" class="mt-1 w-full p-2 border rounded">${service.deliverables}</textarea></div>
+                            <div class="flex items-center"><input type="checkbox" id="modal-trail" ${service.trail ? 'checked' : ''} class="h-4 w-4"><label for="modal-trail" class="ml-2">Trial Service</label></div>
+                        </div>
+                    `;
+                } else if (type === 'plan') {
+                    const plan = index === -1 ? { name: '', price: 0, discount: 0 } : plansData[index];
+                    modalTitle.innerText = index === -1 ? 'Add Plan' : 'Edit Plan';
+                    modalBody.innerHTML = `
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div><label class="block text-sm font-medium">Name</label><input type="text" id="modal-name" value="${plan.name}" class="mt-1 w-full p-2 border rounded"></div>
+                            <div><label class="block text-sm font-medium">Price</label><input type="number" id="modal-price" value="${plan.price}" class="mt-1 w-full p-2 border rounded"></div>
+                            <div><label class="block text-sm font-medium">Discount</label><input type="number" step="0.01" id="modal-discount" value="${plan.discount}" class="mt-1 w-full p-2 border rounded"></div>
+                        </div>
+                    `;
+                }
+            }
+
+            function closeModal() {
+                modal.classList.remove('show');
+                modal.classList.add('fade-out');
+                setTimeout(() => modal.classList.remove('fade-out'), 300);
+            }
+
+            function handleSave() {
+                const { type, index } = currentEdit;
+                if (type === 'service') {
+                    const updatedService = {
+                        name: document.getElementById('modal-name').value,
+                        price: parseFloat(document.getElementById('modal-price').value) || 0,
+                        category: document.getElementById('modal-category').value,
+                        description: document.getElementById('modal-description').value,
+                        deliverables: document.getElementById('modal-deliverables').value,
+                        trail: document.getElementById('modal-trail').checked,
+                    };
+                    if (index === -1) servicesData.push(updatedService);
+                    else servicesData[index] = updatedService;
+                    renderServices();
+                } else if (type === 'plan') {
+                    const updatedPlan = {
+                        name: document.getElementById('modal-name').value,
+                        price: parseFloat(document.getElementById('modal-price').value) || 0,
+                        discount: parseFloat(document.getElementById('modal-discount').value) || 0,
+                    };
+                    if (index === -1) plansData.push(updatedPlan);
+                    else plansData[index] = updatedPlan;
+                    renderPlans();
+                }
+                closeModal();
+            }
+
+            function handleRemove(type, index) {
+                if (confirm(`Are you sure you want to remove this ${type}?`)) {
+                    if (type === 'service') {
+                        servicesData.splice(index, 1);
+                        renderServices();
+                    } else if (type === 'plan') {
+                        plansData.splice(index, 1);
+                        renderPlans();
+                    }
+                }
+            }
+
+            // --- SAVING TO SERVER ---
+            async function saveChanges() {
+                saveChangesBtn.disabled = true;
+                saveChangesBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Saving...';
+                const data = { services: servicesData, plans: plansData };
+                try {
+                    const response = await fetch('update_services.php', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(data)
+                    });
+                    if (response.ok) {
+                        alert('Changes saved successfully!');
+                    } else {
+                        throw new Error('Server responded with an error.');
+                    }
+                } catch (error) {
+                    console.error('Error saving changes:', error);
+                    alert('An error occurred while saving changes.');
+                } finally {
+                    saveChangesBtn.disabled = false;
+                    saveChangesBtn.innerHTML = '<i class="fas fa-save mr-2"></i>Save All Changes';
+                }
+            }
+
+            // --- NAVIGATION ---
+            function switchView(view) {
+                if (view === 'services') {
+                    servicesSection.classList.remove('hidden');
+                    plansSection.classList.add('hidden');
+                    navServices.classList.add('bg-gray-200');
+                    navPlans.classList.remove('bg-gray-200');
+                } else {
+                    servicesSection.classList.add('hidden');
+                    plansSection.classList.remove('hidden');
+                    navServices.classList.remove('bg-gray-200');
+                    navPlans.classList.add('bg-gray-200');
+                }
+            }
+
+            // --- EVENT LISTENERS ---
+            serviceSearch.addEventListener('input', (e) => {
+                const searchTerm = e.target.value.toLowerCase();
+                const filteredServices = servicesData.filter(service => 
+                    service.name.toLowerCase().includes(searchTerm) || 
+                    service.category.toLowerCase().includes(searchTerm)
+                );
+                renderServices(filteredServices);
+            });
+
+            planSearch.addEventListener('input', (e) => {
+                const searchTerm = e.target.value.toLowerCase();
+                const filteredPlans = plansData.filter(plan => 
+                    plan.name.toLowerCase().includes(searchTerm)
+                );
+                renderPlans(filteredPlans);
+            });
+
+            navServices.addEventListener('click', (e) => { e.preventDefault(); switchView('services'); });
+            navPlans.addEventListener('click', (e) => { e.preventDefault(); switchView('plans'); });
+            
+            addServiceBtn.addEventListener('click', () => openModal('service', -1));
+            addPlanBtn.addEventListener('click', () => openModal('plan', -1));
+
+            servicesList.addEventListener('click', (e) => {
+                const btn = e.target.closest('button');
+                if (!btn) return;
+                const { type, index } = btn.dataset;
+                if (btn.classList.contains('edit-btn')) openModal(type, parseInt(index));
+                if (btn.classList.contains('remove-btn')) handleRemove(type, parseInt(index));
+            });
+
+            plansList.addEventListener('click', (e) => {
+                const btn = e.target.closest('button');
+                if (!btn) return;
+                const { type, index } = btn.dataset;
+                if (btn.classList.contains('edit-btn')) openModal(type, parseInt(index));
+                if (btn.classList.contains('remove-btn')) handleRemove(type, parseInt(index));
+            });
+
+            modalSave.addEventListener('click', handleSave);
+            modalCancel.addEventListener('click', closeModal);
+            saveChangesBtn.addEventListener('click', saveChanges);
+            logoutBtn.addEventListener('click', () => {
+                sessionStorage.removeItem('isAdminAuthenticated');
+                window.location.href = 'login.html';
+            });
+
+            // --- INITIALIZATION ---
+            fetchData();
+        });
+    </script>
+</body>
+</html>

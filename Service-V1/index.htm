@@ -1,0 +1,1271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Our Services & Bundles</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- html2pdf.js library for PDF generation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            scroll-behavior: smooth;
+        }
+        /* Custom style for checked row in the services table */
+        .selected-row {
+            background-color: #f0f5ff; /* A light blue/indigo background */
+        }
+        /* Custom style for the selected membership plan card */
+        .selected-plan {
+            box-shadow: 0 0 0 3px #4f46e5; /* Indigo ring */
+            border-color: #4f46e5;
+        }
+        /* Styles for modal fade-in/out */
+        .modal-fade-enter-active, .modal-fade-leave-active {
+            transition: opacity 0.3s ease;
+        }
+        .modal-fade-enter-from, .modal-fade-leave-to {
+            opacity: 0;
+            pointer-events: none; /* Prevent interaction when invisible */
+        }
+        .modal-fade-enter-to, .modal-fade-leave-from {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        /* Loading spinner for LLM */
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3498db;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+            vertical-align: middle;
+            margin-right: 8px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Custom switch for trial discount toggle */
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 34px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            -webkit-transition: .4s;
+            transition: .4s;
+            border-radius: 34px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            -webkit-transition: .4s;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: #4f46e5; /* Indigo */
+        }
+
+        input:focus + .slider {
+            box-shadow: 0 0 1px #4f46e5;
+        }
+
+        input:checked + .slider:before {
+            -webkit-transform: translateX(26px);
+            -ms-transform: translateX(26px);
+            transform: translateX(26px);
+        }
+
+        /* Floating Calculator Styles */
+        #floating-calculator-section {
+            position: fixed;
+            top: 20px; /* Default to top */
+            left: 20px; /* Default to left */
+            bottom: auto; /* Reset bottom */
+            right: auto; /* Reset right */
+            z-index: 1000;
+            width: 90%; /* Responsive width for mobile */
+            max-width: 220px; /* Even smaller max width for calculator */
+            min-width: 180px; /* Minimum width to keep content legible */
+            min-height: 180px; /* Minimum height */
+            resize: both; /* Enable resizing */
+            overflow: auto; /* Add scrollbars if content overflows on resize */
+            cursor: grab; /* Indicate draggable */
+            padding: 0.5rem; /* Reduced padding */
+            display: none; /* Initially hidden */
+
+            /* Font resizing base */
+            font-size: var(--calculator-font-size, 0.8rem);
+        }
+        #floating-calculator-section.dragging {
+            cursor: grabbing;
+        }
+        #floating-calculator-section h2 {
+            font-size: 0.9rem; /* Smaller font size */
+            margin-bottom: 0.4rem; /* Adjusted margin */
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        #floating-calculator-section .text-center {
+            padding: 0.4rem; /* Reduced padding for inner div */
+        }
+        #floating-calculator-section .text-lg {
+            font-size: 0.7rem; /* Reduced font size for labels */
+        }
+        #floating-calculator-section .text-3xl {
+            font-size: 1.5rem; /* Reduced font size for sub-totals */
+        }
+        #floating-calculator-section .text-5xl {
+            font-size: 1.8rem; /* Reduced font size for main total */
+        }
+        #floating-calculator-section .text-sm {
+            font-size: 0.6rem; /* Reduced font size for quarterly price */
+        }
+        .plan-option.dimmed {
+            opacity: 0.5;
+            pointer-events: none;
+        }
+        .calculator-controls {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .calculator-controls button {
+            background-color: #6366f1;
+            color: white;
+            border-radius: 4px;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            line-height: 1;
+            padding: 0;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .calculator-controls button:hover {
+            background-color: #4338ca;
+        }
+        .calculator-close-btn {
+            background: none;
+            border: none;
+            padding: 0;
+            cursor: pointer;
+            color: #ef4444; /* Red for close */
+            margin-left: 8px; /* Space from font controls */
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: color 0.2s;
+        }
+        .calculator-close-btn:hover {
+            color: #b91c1c;
+        }
+        .calculator-close-btn svg {
+            width: 14px;
+            height: 14px;
+        }
+
+
+        /* Responsive adjustments for overall layout */
+        @media (max-width: 767px) {
+            .container {
+                padding-left: 1rem;
+                padding-right: 1rem;
+            }
+            /* Adjust grid for membership plans to be a single column on small screens */
+            #plan-container {
+                grid-template-columns: 1fr;
+            }
+            table {
+                font-size: 0.8rem; /* Smaller text for tables on mobile */
+            }
+            th, td {
+                padding: 0.5rem; /* Smaller padding in table cells */
+            }
+            .service-qty-input {
+                width: 60px; /* Smaller quantity input on mobile */
+                padding: 0.25rem 0.5rem;
+            }
+            #floating-calculator-section {
+                top: 10px; /* Adjust slightly for mobile */
+                left: 10px;
+                max-width: calc(100% - 20px); /* Fill most of the screen width */
+                min-width: 150px;
+                min-height: 150px;
+            }
+            /* Adjust countdown timer font size on mobile */
+            #countdown-timer span.text-3xl {
+                font-size: 2rem;
+            }
+            #countdown-timer span.text-xs {
+                font-size: 0.65rem;
+            }
+            .modal-content-wrapper {
+                max-width: 90%; /* Max width for modal content on small screens */
+                padding: 1rem;
+            }
+            .modal-content-wrapper h2 {
+                font-size: 1.5rem;
+            }
+            .modal-content-wrapper button, .modal-content-wrapper a {
+                font-size: 0.9rem;
+                padding: 0.75rem 1rem;
+            }
+        }
+
+        @media (min-width: 768px) { /* Adjust for larger screens */
+            #floating-calculator-section {
+                top: 40px;
+                left: 40px;
+                width: auto;
+                padding: 0.75rem; /* Restore slightly more padding for desktop */
+                max-width: 260px; /* Revert to desktop max width */
+                min-width: 180px;
+                min-height: 180px;
+            }
+            #floating-calculator-section h2 {
+                font-size: 1rem;
+                margin-bottom: 0.5rem;
+            }
+             #floating-calculator-section .text-center {
+                padding: 0.5rem;
+            }
+            #floating-calculator-section .text-lg {
+                font-size: 0.75rem;
+            }
+            #floating-calculator-section .text-3xl {
+                font-size: 1.75rem;
+            }
+            #floating-calculator-section .text-5xl {
+                font-size: 2rem;
+            }
+            #floating-calculator-section .text-sm {
+                font-size: 0.65rem;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800">
+
+    <div class="container mx-auto px-4 py-8 md:py-12">
+
+        <!-- Header -->
+        <header class="text-center mb-12 relative">
+            <h1 class="text-4xl md:text-5xl font-bold text-gray-900">Exclusive Offers</h1>
+            <p class="text-lg text-gray-600 mt-2">Limited time bundles and services to elevate your business.</p>
+        </header>
+
+        <!-- Countdown Timer Section -->
+        <section id="countdown-section" class="max-w-3xl mx-auto bg-white rounded-2xl shadow-lg p-6 md:p-8 mb-12 border border-gray-200">
+            <h2 class="text-2xl font-bold text-center text-indigo-600 mb-4">Trial Offer Ends In:</h2>
+            <div id="countdown-timer" class="flex justify-center items-center space-x-2 md:space-x-4 text-center">
+                <div class="bg-indigo-50 rounded-lg p-3 md:p-4 w-20 md:w-24">
+                    <span id="days" class="text-3xl md:text-4xl font-bold text-indigo-700">0</span>
+                    <span class="text-xs md:text-sm text-indigo-500 block">Days</span>
+                </div>
+                <div class="bg-indigo-50 rounded-lg p-3 md:p-4 w-20 md:w-24">
+                    <span id="hours" class="text-3xl md:text-4xl font-bold text-indigo-700">0</span>
+                    <span class="text-xs md:text-sm text-indigo-500 block">Hours</span>
+                </div>
+                <div class="bg-indigo-50 rounded-lg p-3 md:p-4 w-20 md:w-24">
+                    <span id="minutes" class="text-3xl md:text-4xl font-bold text-indigo-700">0</span>
+                    <span class="text-xs md:text-sm text-indigo-500 block">Minutes</span>
+                </div>
+                <div class="bg-indigo-50 rounded-lg p-3 md:p-4 w-20 md:w-24">
+                    <span id="seconds" class="text-3xl md:text-4xl font-bold text-indigo-700">0</span>
+                    <span class="text-xs md:text-sm text-indigo-500 block">Seconds</span>
+                </div>
+            </div>
+            <!-- Trial Offer Toggle Button -->
+            <div class="flex flex-col sm:flex-row items-center justify-center mt-6">
+                <span class="text-lg font-medium text-gray-700 mb-3 sm:mb-0 sm:mr-3 text-center">Activate Trial Discount (80% Off Eligible Services)</span>
+                <label class="switch">
+                    <input type="checkbox" id="trial-discount-toggle">
+                    <span class="slider round"></span>
+                </label>
+            </div>
+        </section>
+
+        <!-- Smart Recommendation Section (New LLM Feature) -->
+        <section id="recommendation-section" class="max-w-3xl mx-auto bg-white rounded-2xl shadow-lg p-6 md:p-8 mb-12 border border-gray-200">
+            <h2 class="text-2xl font-bold text-center text-gray-800 mb-4">Get Smart Service Recommendations ✨</h2>
+            <p class="text-center text-gray-600 mb-6">Tell us about your business goals and we'll suggest the best plan and services!</p>
+            <div class="space-y-4">
+                <div>
+                    <label for="business-needs" class="block text-sm font-medium text-gray-700">Describe your business goals:</label>
+                    <textarea id="business-needs" rows="4" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" placeholder="e.g., 'I'm a small startup needing a basic online presence and help with social media marketing.'"></textarea>
+                </div>
+                <button id="get-recommendation-btn" class="w-full flex items-center justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-lg font-medium text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500">
+                    <span id="recommendation-btn-text">Get Smart Recommendation ✨</span>
+                    <span id="recommendation-loader" class="loader hidden"></span>
+                </button>
+                <div id="recommendation-message" class="mt-4 p-3 rounded-md text-center hidden"></div>
+            </div>
+        </section>
+
+        <!-- Membership Plans Section -->
+        <section id="bundles-section" class="mb-16">
+            <h2 class="text-3xl font-bold text-center mb-10">1. Choose Your Membership Plan</h2>
+            <!-- Adjusted grid to be single column on mobile, then 2 on sm, 3 on lg -->
+            <div id="plan-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
+                <label class="membership-plan-label plan-option bg-white rounded-2xl shadow-md p-6 flex flex-col text-center border-2 border-transparent hover:border-indigo-400 transition-all duration-300 cursor-pointer">
+                    <input type="radio" name="membership-plan" class="membership-plan-input sr-only" data-name="Custom Bundle" data-price="0" data-discount="0" checked>
+                    <h3 class="text-2xl font-bold mb-2">Custom Bundle</h3>
+                    <p class="text-gray-600 mb-4 flex-grow">Select individual services at standard prices.</p>
+                    <div class="text-lg font-semibold text-indigo-600">Pay as you go</div>
+                    <div class="text-sm font-medium text-gray-500 mt-1">No Discount</div>
+                </label>
+                <label class="membership-plan-label plan-option bg-white rounded-2xl shadow-md p-6 flex flex-col text-center border-2 border-transparent hover:border-indigo-400 transition-all duration-300 cursor-pointer">
+                    <input type="radio" name="membership-plan" class="membership-plan-input sr-only" data-name="Lite" data-price="700" data-discount="0.10">
+                    <h3 class="text-2xl font-bold mb-2">Lite</h3>
+                    <p class="text-gray-600 mb-4 flex-grow">Monthly Price</p>
+                    <div class="text-3xl font-bold text-indigo-600">AED 700</div>
+                    <div class="text-lg font-medium text-green-600 mt-1">10% Discount on Services</div>
+                </label>
+                <label class="membership-plan-label plan-option bg-white rounded-2xl shadow-md p-6 flex flex-col text-center border-2 border-transparent hover:border-indigo-400 transition-all duration-300 cursor-pointer">
+                    <input type="radio" name="membership-plan" class="membership-plan-input sr-only" data-name="Basic" data-price="1850" data-discount="0.20">
+                    <h3 class="text-2xl font-bold mb-2">Basic</h3>
+                    <p class="text-gray-600 mb-4 flex-grow">Monthly Price</p>
+                    <div class="text-3xl font-bold text-indigo-600">AED 1,850</div>
+                    <div class="text-lg font-medium text-green-600 mt-1">20% Discount on Services</div>
+                </label>
+                <label class="membership-plan-label plan-option bg-white rounded-2xl shadow-md p-6 flex flex-col text-center border-2 border-transparent hover:border-indigo-400 transition-all duration-300 cursor-pointer">
+                    <input type="radio" name="membership-plan" class="membership-plan-input sr-only" data-name="Pro" data-price="2900" data-discount="0.30">
+                    <h3 class="text-2xl font-bold mb-2">Pro</h3>
+                    <p class="text-gray-600 mb-4 flex-grow">Monthly Price</p>
+                    <div class="text-3xl font-bold text-indigo-600">AED 2,900</div>
+                    <div class="text-lg font-medium text-green-600 mt-1">30% Discount on Services</div>
+                </label>
+                <label class="membership-plan-label plan-option bg-white rounded-2xl shadow-md p-6 flex flex-col text-center border-2 border-transparent hover:border-indigo-400 transition-all duration-300 cursor-pointer">
+                    <input type="radio" name="membership-plan" class="membership-plan-input sr-only" data-name="Super" data-price="4600" data-discount="0.45">
+                    <h3 class="text-2xl font-bold mb-2">Super</h3>
+                    <p class="text-gray-600 mb-4 flex-grow">Monthly Price</p>
+                    <div class="text-3xl font-bold text-indigo-600">AED 4,600</div>
+                    <div class="text-lg font-medium text-green-600 mt-1">45% Discount on Services</div>
+                </label>
+                <label class="membership-plan-label plan-option bg-white rounded-2xl shadow-md p-6 flex flex-col text-center border-2 border-transparent hover:border-indigo-400 transition-all duration-300 cursor-pointer">
+                    <input type="radio" name="membership-plan" class="membership-plan-input sr-only" data-name="Legend" data-price="7500" data-discount="0.60">
+                    <h3 class="text-2xl font-bold mb-2">Legend</h3>
+                    <p class="text-gray-600 mb-4 flex-grow">Monthly Price</p>
+                    <div class="text-3xl font-bold text-indigo-600">AED 7,500</div>
+                    <div class="text-lg font-medium text-green-600 mt-1">60% Discount on Services</div>
+                </label>
+            </div>
+        </section>
+
+        <!-- Services List Section -->
+        <section id="services-section" class="mb-16">
+            <h2 class="text-3xl font-bold text-center mb-10">2. Select Add-On Services</h2>
+            
+            <!-- Category Buttons -->
+            <div id="category-buttons" class="flex flex-wrap justify-center gap-2 mb-6 max-w-6xl mx-auto">
+                <!-- Buttons will be rendered here by JS -->
+            </div>
+
+            <div class="bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-200 max-w-6xl mx-auto">
+                <div class="overflow-x-auto"> <!-- Added overflow-x-auto for table scrolling on small screens -->
+                    <table class="w-full text-left">
+                        <thead class="bg-gray-100">
+                            <tr>
+                                <th class="p-4 font-semibold text-gray-700 w-16 text-center">Select</th>
+                                <th class="p-4 font-semibold text-gray-700">Service Name</th>
+                                <th class="p-4 font-semibold text-gray-700">Qty</th>
+                                <th class="p-4 font-semibold text-gray-700 text-right">Price (Monthly)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="services-table-body">
+                            <!-- Service rows will be dynamically populated here by JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Static Price Calculator Section (Moved here) -->
+        <section id="static-calculator-section" class="max-w-3xl mx-auto bg-white rounded-2xl shadow-lg p-6 md:p-8 mb-12 border border-gray-200">
+            <h2 class="text-2xl font-bold text-center text-gray-800 mb-4">3. Live Price Estimate</h2>
+            <div class="text-center bg-gray-50 p-6 rounded-lg">
+                <p class="text-lg text-gray-600 uppercase tracking-wider">Monthly Plan (Paid in Advance)</p>
+                <p class="text-3xl font-bold text-indigo-600 my-1">AED <span id="static-plan-monthly-total">0.00</span></p>
+                <p class="text-sm text-gray-500">Quarterly Plan (Paid in Advance): AED <span id="static-plan-quarterly-total">0.00</span></p>
+                <hr class="my-3 border-gray-300">
+                <p class="text-lg text-gray-600 uppercase tracking-wider">Total Add-On Services (Paid End of Month)</p>
+                <p class="text-3xl font-bold text-indigo-600 my-1">AED <span id="static-services-monthly-total">0.00</span></p>
+                <hr class="my-3 border-gray-300">
+                <p class="text-lg text-gray-600 uppercase tracking-wider">Total Monthly Payment</p>
+                <p class="text-5xl font-bold text-indigo-600 my-2">AED <span id="static-monthly-total">0.00</span></p>
+            </div>
+        </section>
+
+        <!-- Customer Details & Quotation Section -->
+        <section id="customer-details-section" class="max-w-3xl mx-auto">
+             <h2 class="text-3xl font-bold text-center mb-10">4. Get Your Quotation</h2>
+             <div class="bg-white rounded-2xl shadow-lg p-8 border border-gray-200">
+                <form id="customer-form" class="space-y-6">
+                    <div>
+                        <label for="country-code" class="block text-sm font-medium text-gray-700">Country Code</label>
+                        <select id="country-code" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                            <option value="+1">USA (+1)</option>
+                            <option value="+971" selected>UAE (+971)</option>
+                            <!-- Add more country codes as needed -->
+                        </select>
+                    </div>
+                    <div>
+                        <label for="name" class="block text-sm font-medium text-gray-700">Full Name</label>
+                        <input type="text" id="name" name="name" required class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 rounded-md">
+                    </div>
+                     <div>
+                        <label for="email" class="block text-sm font-medium text-gray-700">Email Address</label>
+                        <input type="email" id="email" name="email" required class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 rounded-md">
+                    </div>
+                     <div>
+                        <label for="mobile" class="block text-sm font-medium text-gray-700">Mobile Number</label>
+                        <input type="tel" id="mobile" name="mobile" required placeholder="e.g., 501234567" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 rounded-md">
+                    </div>
+                    <div id="form-error" class="text-red-500 text-sm hidden">Please fill out all fields.</div>
+                    <div id="mobile-error" class="text-red-500 text-sm hidden">Invalid mobile number for selected country.</div>
+                    <div>
+                        <button type="submit" class="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-lg font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                            Get Quotation
+                        </button>
+                    </div>
+                </form>
+             </div>
+        </section>
+
+    </div>
+
+    <!-- Floating Price Calculator Section -->
+    <section id="floating-calculator-section" class="bg-white rounded-2xl shadow-lg border border-gray-200">
+        <h2 id="floating-calculator-header" class="text-xl font-bold text-center text-gray-800 mb-4 cursor-grab">
+            <span>Live Price Estimate</span>
+            <div class="calculator-controls">
+                <button id="floating-font-decrease">-</button>
+                <button id="floating-font-increase">+</button>
+                <button id="close-floating-calculator" class="calculator-close-btn">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+        </h2>
+        <div class="text-center bg-gray-50 p-6 rounded-lg">
+            <p class="text-lg text-gray-600 uppercase tracking-wider">Monthly Plan (Paid in Advance)</p>
+            <p class="text-3xl font-bold text-indigo-600 my-1">AED <span id="floating-plan-monthly-total">0.00</span></p>
+            <p class="text-sm text-gray-500">Quarterly Plan (Paid in Advance): AED <span id="floating-plan-quarterly-total">0.00</span></p>
+            <hr class="my-3 border-gray-300">
+            <p class="text-lg text-gray-600 uppercase tracking-wider">Total Add-On Services (Paid End of Month)</p>
+            <p class="text-3xl font-bold text-indigo-600 my-1">AED <span id="floating-services-monthly-total">0.00</span></p>
+            <hr class="my-3 border-gray-300">
+            <p class="text-lg text-gray-600 uppercase tracking-wider">Total Monthly Payment</p>
+            <p class="text-5xl font-bold text-indigo-600 my-2">AED <span id="floating-overall-monthly-total">0.00</span></p>
+        </div>
+    </section>
+
+    <!-- Quotation Modal -->
+    <div id="quotation-modal" class="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center p-4 z-50 modal-fade-leave-to" style="opacity:0; pointer-events:none;">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg p-8 transform transition-all modal-content-wrapper" id="modal-content">
+            <h2 class="text-2xl font-bold text-center mb-4">Your Quotation Summary</h2>
+            <div id="quotation-pdf-content" class="text-left space-y-4 mb-6">
+                <!-- Quotation details will be injected here for PDF -->
+            </div>
+            <!-- Changed buttons to flex-col on mobile, then flex-row on sm -->
+            <div class="flex flex-col sm:flex-row gap-4">
+                 <a id="whatsapp-link" href="#" target="_blank" class="w-full flex items-center justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-lg font-medium text-white bg-green-500 hover:bg-green-600 rounded-md">
+                    Send via WhatsApp
+                </a>
+                <a id="email-link" href="#" class="w-full flex items-center justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-lg font-medium text-white bg-blue-500 hover:bg-blue-600 rounded-md">
+                    Send via Email
+                </a>
+                <button id="download-pdf-btn" class="w-full flex items-center justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-lg font-medium text-white bg-red-500 hover:bg-red-600 rounded-md">
+                    Download PDF
+                </button>
+            </div>
+            <button id="close-modal" class="absolute top-4 right-4 text-gray-500 hover:text-gray-800">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+        </div>
+    </div>
+
+
+    <script>
+        document.addEventListener('DOMContentLoaded', async function () {
+            // --- Elements ---
+            let serviceCheckboxes; 
+            const planInputs = document.querySelectorAll('.membership-plan-input');
+            const planLabels = document.querySelectorAll('.membership-plan-label');
+            
+            // Static calculator totals
+            const staticPlanMonthlyTotalEl = document.getElementById('static-plan-monthly-total');
+            const staticPlanQuarterlyTotalEl = document.getElementById('static-plan-quarterly-total');
+            const staticServicesMonthlyTotalEl = document.getElementById('static-services-monthly-total');
+            const staticMonthlyTotalEl = document.getElementById('static-monthly-total');
+
+            // Floating calculator totals
+            const floatingPlanMonthlyTotalEl = document.getElementById('floating-plan-monthly-total');
+            const floatingPlanQuarterlyTotalEl = document.getElementById('floating-plan-quarterly-total');
+            const floatingServicesMonthlyTotalEl = document.getElementById('floating-services-monthly-total');
+            const floatingOverallMonthlyTotalEl = document.getElementById('floating-overall-monthly-total');
+
+
+            const customerForm = document.getElementById('customer-form');
+            const quotationModal = document.getElementById('quotation-modal');
+            const closeModalBtn = document.getElementById('close-modal');
+            const servicesTableBody = document.getElementById('services-table-body');
+            const categoryButtonsContainer = document.getElementById('category-buttons');
+            const quotationPdfContent = document.getElementById('quotation-pdf-content');
+            const downloadPdfBtn = document.getElementById('download-pdf-btn');
+
+            // LLM Feature Elements
+            const businessNeedsTextarea = document.getElementById('business-needs');
+            const getRecommendationBtn = document.getElementById('get-recommendation-btn');
+            const recommendationBtnText = document.getElementById('recommendation-btn-text');
+            const recommendationLoader = document.getElementById('recommendation-loader');
+            const recommendationMessage = document.getElementById('recommendation-message');
+
+            // Floating Calculator Elements (specific to floating one)
+            const floatingCalculatorSection = document.getElementById('floating-calculator-section');
+            const floatingCalculatorHeader = document.getElementById('floating-calculator-header');
+            const closeFloatingCalculatorBtn = document.getElementById('close-floating-calculator');
+            const floatingFontDecreaseBtn = document.getElementById('floating-font-decrease');
+            const floatingFontIncreaseBtn = document.getElementById('floating-font-increase');
+            let floatingCalculatorFontSize = 0.8; 
+            const FONT_SIZE_INCREMENT = 0.05; 
+
+            let isDragging = false;
+            let initialX, initialY;
+            let currentLeft, currentTop;
+
+            // Trial Discount Toggle
+            const trialDiscountToggle = document.getElementById('trial-discount-toggle');
+            let isTrialDiscountActive = false;
+            const premiumPlans = ['Pro', 'Super', 'Legend']; // Plans eligible for trial discount benefits
+
+            // Mobile Number Validation Elements
+            const countryCodeSelect = document.getElementById('country-code');
+            const mobileInput = document.getElementById('mobile');
+            const mobileError = document.getElementById('mobile-error');
+
+
+            const response = await fetch('services.json');
+            const data = await response.json();
+            const allServicesData = data.services;
+            const plansData = data.plans;
+
+            // Store current quantities for services, initialized to 0
+            const serviceQuantities = {};
+            allServicesData.forEach(service => {
+                serviceQuantities[service.name] = 0;
+            });
+
+
+            // --- Category Filtering Logic ---
+            let currentCategoryFilter = 'All'; // Default filter
+
+            function getUniqueCategories() {
+                const categories = new Set(allServicesData.map(service => service.category));
+                return ['All', ...Array.from(categories).sort()];
+            }
+
+            function renderCategoryButtons() {
+                const categories = getUniqueCategories();
+                categoryButtonsContainer.innerHTML = ''; // Clear existing buttons
+
+                categories.forEach(category => {
+                    const button = document.createElement('button');
+                    button.classList.add(
+                        'py-2', 'px-4', 'rounded-full', 'font-semibold', 'text-sm', 'transition-colors', 'duration-200',
+                        'focus:outline-none', 'focus:ring-2', 'focus:ring-offset-2'
+                    );
+                    button.innerText = category;
+                    button.dataset.category = category;
+
+                    const isCurrentCategoryButton = (currentCategoryFilter === 'All' && category === 'All') || (currentCategoryFilter !== 'All' && category === currentCategoryFilter);
+
+                    if (isCurrentCategoryButton) {
+                        button.classList.add('bg-indigo-600', 'text-white', 'hover:bg-indigo-700', 'focus:ring-indigo-500');
+                    } else {
+                        button.classList.add('bg-gray-200', 'text-gray-700', 'hover:bg-gray-300', 'focus:ring-gray-400');
+                    }
+
+                    button.addEventListener('click', () => {
+                        currentCategoryFilter = category;
+                        renderCategoryButtons(); // Re-render to update active state
+                        populateServicesTable(); // Re-populate table with filtered services
+                        calculateTotal(); // Recalculate total
+                    });
+                    categoryButtonsContainer.appendChild(button);
+                });
+            }
+
+            // Function to populate the services table based on current category filter
+            function populateServicesTable() {
+                servicesTableBody.innerHTML = ''; // Clear existing rows
+                const filteredServices = currentCategoryFilter === 'All'
+                    ? allServicesData
+                    : allServicesData.filter(service => service.category === currentCategoryFilter);
+
+                if (filteredServices.length === 0) {
+                    const noResultsRow = document.createElement('tr');
+                    noResultsRow.innerHTML = `<td colspan="4" class="p-4 text-center text-gray-500">No services found in this category.</td>`;
+                    servicesTableBody.appendChild(noResultsRow);
+                    return;
+                }
+
+                filteredServices.forEach((service, index) => {
+                    const row = document.createElement('tr');
+                    row.classList.add('border-b', 'border-gray-200', 'transition-colors', 'duration-200', 'cursor-pointer');
+                    if (index === filteredServices.length - 1) {
+                        row.classList.remove('border-b');
+                        row.classList.add('border-b-0');
+                    }
+
+                    const isChecked = serviceQuantities[service.name] > 0;
+                    const currentQty = serviceQuantities[service.name] > 0 ? serviceQuantities[service.name] : 1;
+
+                    row.innerHTML = `
+                        <td class="p-4 text-center">
+                            <input type="checkbox" class="service-checkbox h-5 w-5 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500 cursor-pointer" 
+                                data-name="${service.name}" ${isChecked ? 'checked' : ''}>
+                        </td>
+                        <td class="p-4 font-medium">
+                            ${service.name}
+                            <p class="text-xs text-gray-500 mt-1">${service.description}</p>
+                            <p class="text-xs text-gray-400">Deliverables: ${service.deliverables}</p>
+                        </td>
+                        <td class="p-4">
+                            <input type="number" min="1" value="${currentQty}" 
+                                class="service-qty-input w-20 px-2 py-1 border border-gray-300 rounded-md text-center ${!isChecked ? 'opacity-50 cursor-not-allowed' : ''}" 
+                                data-name="${service.name}" ${!isChecked ? 'disabled' : ''}>
+                        </td>
+                        <td class="p-4 font-semibold text-right service-price-cell">
+                            <span>AED ${formatCurrency(service.price)}</span>
+                        </td>
+                    `;
+                    servicesTableBody.appendChild(row);
+
+                    // Attach event listeners to the new elements
+                    const checkbox = row.querySelector('.service-checkbox');
+                    const qtyInput = row.querySelector('.service-qty-input');
+
+                    // Set initial state for quantity based on stored value
+                    qtyInput.value = serviceQuantities[service.name] || 1;
+                    qtyInput.disabled = !checkbox.checked;
+                    if (checkbox.checked) {
+                        row.classList.add('selected-row');
+                    } else {
+                        row.classList.remove('selected-row');
+                    }
+
+
+                    // Handle checkbox change
+                    checkbox.addEventListener('change', () => {
+                        if (checkbox.checked) {
+                            serviceQuantities[service.name] = parseInt(qtyInput.value) || 1;
+                            qtyInput.disabled = false;
+                            qtyInput.classList.remove('opacity-50', 'cursor-not-allowed');
+                        } else {
+                            serviceQuantities[service.name] = 0;
+                            qtyInput.disabled = true;
+                            qtyInput.classList.add('opacity-50', 'cursor-not-allowed');
+                        }
+                        calculateTotal();
+                        row.classList.toggle('selected-row', checkbox.checked);
+                    });
+
+                    // Handle quantity input change
+                    qtyInput.addEventListener('input', () => {
+                        let qty = parseInt(qtyInput.value);
+                        if (isNaN(qty) || qty < 1) {
+                            qty = 1;
+                            qtyInput.value = 1; // Enforce minimum 1
+                        }
+                        serviceQuantities[service.name] = qty;
+                        calculateTotal();
+                    });
+
+                    // Add click listener to the row to toggle checkbox
+                    row.addEventListener('click', (event) => {
+                        // Prevent row click from firing if the click originated from the checkbox or quantity input
+                        if (event.target !== checkbox && event.target !== qtyInput) {
+                            checkbox.checked = !checkbox.checked;
+                            checkbox.dispatchEvent(new Event('change')); // Manually dispatch change event
+                        }
+                    });
+                });
+                // Re-select service checkboxes after populating the table
+                serviceCheckboxes = document.querySelectorAll('.service-checkbox');
+                // Note: Event listeners are now attached individually within the loop for consistency.
+            }
+
+
+            // --- Countdown Timer Logic ---
+            const countdownDays = 3; 
+            const countDownDate = new Date();
+            countDownDate.setDate(countDownDate.getDate() + countdownDays);
+            const timerInterval = setInterval(() => {
+                const now = new Date().getTime();
+                const distance = countDownDate - now;
+
+                if (distance < 0) {
+                    clearInterval(timerInterval);
+                    document.getElementById("countdown-section").innerHTML = '<h2 class="text-2xl font-bold text-center text-red-600">The trial offer has expired!</h2>';
+                    return;
+                }
+
+                document.getElementById("days").innerText = Math.floor(distance / (1000 * 60 * 60 * 24));
+                document.getElementById("hours").innerText = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                document.getElementById("minutes").innerText = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                document.getElementById("seconds").innerText = Math.floor((distance % (1000 * 60)) / 1000);
+            }, 1000);
+
+            // --- Price Calculation Logic ---
+            function formatCurrency(value) {
+                return value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            }
+
+            function calculateTotal() {
+                const selectedPlanInput = document.querySelector('input[name="membership-plan"]:checked');
+                const planDiscount = parseFloat(selectedPlanInput.dataset.discount);
+                const planPrice = parseFloat(selectedPlanInput.dataset.price);
+                const selectedPlanName = selectedPlanInput.dataset.name; // Get the name of the selected plan
+
+                let currentPlanMonthly = planPrice;
+                let currentServicesTotal = 0;
+                
+                // Highlight the selected plan card
+                planLabels.forEach(label => {
+                    label.classList.toggle('selected-plan', label.contains(selectedPlanInput));
+                });
+
+                // Update service prices and calculate total based on selected plan and services
+                serviceCheckboxes.forEach(checkbox => {
+                    const row = checkbox.closest('tr');
+                    const priceCell = row.querySelector('.service-price-cell');
+                    const qtyInput = row.querySelector('.service-qty-input');
+
+                    const originalServiceData = allServicesData.find(s => s.name === checkbox.dataset.name);
+                    const originalPrice = originalServiceData ? originalServiceData.price : 0;
+                    const isTrailService = originalServiceData ? originalServiceData.trail : false;
+                    
+                    let discountedServicePrice = originalPrice * (1 - planDiscount);
+
+                    // Apply additional 80% trial discount if active AND selected plan is one of the premium plans AND service is a trail service
+                    if (isTrialDiscountActive && premiumPlans.includes(selectedPlanName) && isTrailService) {
+                        discountedServicePrice = originalPrice * (1 - 0.80); // 80% off
+                        priceCell.innerHTML = `<span class="line-through text-gray-400 mr-2">AED ${formatCurrency(originalPrice)}</span><span class="text-red-600 mr-2">(-80%)</span><span class="text-green-600">AED ${formatCurrency(discountedServicePrice)}</span>`;
+                    } else if (planDiscount > 0) {
+                        priceCell.innerHTML = `<span class="line-through text-gray-400 mr-2">AED ${formatCurrency(originalPrice)}</span><span class="text-green-600">AED ${formatCurrency(discountedServicePrice)}</span>`;
+                    } else {
+                        priceCell.innerHTML = `<span>AED ${formatCurrency(originalPrice)}</span>`;
+                    }
+
+                    if (checkbox.checked) {
+                        const qty = parseInt(qtyInput.value) || 1;
+                        currentServicesTotal += discountedServicePrice * qty;
+                        row.classList.add('selected-row');
+                        serviceQuantities[checkbox.dataset.name] = qty; // Ensure quantity is stored
+                    } else {
+                        row.classList.remove('selected-row');
+                        serviceQuantities[checkbox.dataset.name] = 0; // Ensure quantity is zero if unchecked
+                    }
+                });
+
+                const overallMonthlyTotal = currentPlanMonthly + currentServicesTotal;
+                const planQuarterlyTotal = currentPlanMonthly * 3;
+                
+                // Update static display totals
+                staticPlanMonthlyTotalEl.innerText = formatCurrency(currentPlanMonthly);
+                staticPlanQuarterlyTotalEl.innerText = formatCurrency(planQuarterlyTotal);
+                staticServicesMonthlyTotalEl.innerText = formatCurrency(currentServicesTotal);
+                staticMonthlyTotalEl.innerText = formatCurrency(overallMonthlyTotal);
+
+                // Update floating display totals
+                floatingPlanMonthlyTotalEl.innerText = formatCurrency(currentPlanMonthly);
+                floatingPlanQuarterlyTotalEl.innerText = formatCurrency(planQuarterlyTotal);
+                floatingServicesMonthlyTotalEl.innerText = formatCurrency(currentServicesTotal);
+                floatingOverallMonthlyTotalEl.innerText = formatCurrency(overallMonthlyTotal);
+            }
+
+            // --- Trial Discount Toggle Event Listener ---
+            trialDiscountToggle.addEventListener('change', () => {
+                isTrialDiscountActive = trialDiscountToggle.checked;
+                
+                // Update plan selectability and visual state
+                planInputs.forEach(input => {
+                    const planName = input.dataset.name;
+                    const label = input.closest('.membership-plan-label');
+                    const isPremium = premiumPlans.includes(planName);
+
+                    if (isTrialDiscountActive) {
+                        if (!isPremium) {
+                            label.classList.add('dimmed');
+                            input.disabled = true;
+                            // If a non-premium plan is selected and dimming, switch to a premium plan or Custom Bundle
+                            if (input.checked) {
+                                // Prefer Pro if available, else Custom Bundle
+                                const proPlan = document.querySelector('input[name="membership-plan"][data-name="Pro"]');
+                                if (proPlan) {
+                                    proPlan.checked = true;
+                                    proPlan.dispatchEvent(new Event('change'));
+                                } else {
+                                    document.querySelector('input[name="membership-plan"][data-name="Custom Bundle"]').checked = true;
+                                    document.querySelector('input[name="membership-plan"][data-name="Custom Bundle"]').dispatchEvent(new Event('change'));
+                                }
+                            }
+                        } else {
+                            label.classList.remove('dimmed');
+                            input.disabled = false;
+                        }
+                    } else { // Trial discount is inactive
+                        label.classList.remove('dimmed');
+                        input.disabled = false;
+                    }
+                });
+
+                calculateTotal(); // Recalculate prices with new discount state and plan state
+            });
+
+            // --- Mobile Number Validation Logic ---
+            function validateMobileNumber(countryCode, mobileNumber) {
+                mobileError.classList.add('hidden'); // Hide previous error
+                mobileNumber = mobileNumber.replace(/\s/g, ''); // Remove spaces
+                
+                if (countryCode === '+971') { // UAE
+                    // UAE mobile numbers typically start with 5 and are 9 digits long (after 971)
+                    // e.g., +971 50 1234567
+                    if (!/^(0)?5[0-9]{8}$/.test(mobileNumber)) {
+                        mobileError.innerText = "Invalid UAE mobile number. Must be 9 or 10 digits starting with 05 or 5.";
+                        mobileError.classList.remove('hidden');
+                        return false;
+                    }
+                } else if (countryCode === '+1') { // USA (basic validation)
+                    // USA numbers are typically 10 digits
+                    if (!/^\d{10}$/.test(mobileNumber)) {
+                        mobileError.innerText = "Invalid USA mobile number. Must be 10 digits.";
+                        mobileError.classList.remove('hidden');
+                        return false;
+                    }
+                }
+                // Add more country validations here as needed
+                return true;
+            }
+
+            // --- Quotation Generation Logic ---
+            customerForm.addEventListener('submit', function(e) {
+                e.preventDefault(); // Prevent default form submission
+                const name = document.getElementById('name').value.trim();
+                const email = document.getElementById('email').value.trim();
+                const mobile = mobileInput.value.trim(); // Get raw mobile number
+                const countryCode = countryCodeSelect.value; // Get selected country code
+                const formError = document.getElementById('form-error');
+
+                // Basic form validation
+                if (!name || !email || !mobile) {
+                    formError.classList.remove('hidden');
+                    return;
+                }
+                formError.classList.add('hidden'); // Hide general error if validation passes
+
+                // Mobile number validation
+                if (!validateMobileNumber(countryCode, mobile)) {
+                    return; // Stop if mobile number is invalid
+                }
+
+                generateQuotation(name, email, mobile, countryCode);
+            });
+            
+            function generateQuotation(name, email, mobile, countryCode) {
+                const selectedPlanInput = document.querySelector('input[name="membership-plan"]:checked');
+                const planName = selectedPlanInput.dataset.name;
+                const planPrice = parseFloat(selectedPlanInput.dataset.price);
+                const planDiscount = parseFloat(selectedPlanInput.dataset.discount);
+                const selectedPlanForTrial = selectedPlanInput.dataset.name;
+
+                // Simplified quotation code: Q-YYMMDD-HHMMSS-RANDOM5
+                const now = new Date();
+                const year = now.getFullYear().toString().slice(-2);
+                const month = (now.getMonth() + 1).toString().padStart(2, '0');
+                const day = now.getDate().toString().padStart(2, '0');
+                const hours = now.getHours().toString().padStart(2, '0');
+                const minutes = now.getMinutes().toString().padStart(2, '0');
+                const seconds = now.getSeconds().toString().padStart(2, '0');
+                const randomChars = Math.random().toString(36).substr(2, 5).toUpperCase();
+                const quotationCode = `Q-${year}${month}${day}-${hours}${minutes}${seconds}-${randomChars}`;
+
+
+                let detailsHtml = `<h3 class="text-xl font-semibold mb-2">Quotation Code: ${quotationCode}</h3>`;
+                detailsHtml += `<p><strong>For:</strong> ${name}<br><strong>Email:</strong> ${email}<br><strong>Mobile:</strong> ${countryCode} ${mobile}</p><hr class="my-2">`;
+                
+                let plainTextDetails = `Quotation Code: ${quotationCode}\n\n`;
+                plainTextDetails += `For: ${name}\nEmail: ${email}\nMobile: ${countryCode} ${mobile}\n\n---\n\n`;
+
+                let currentPlanMonthly = planPrice;
+                let currentServicesTotal = 0; // This will track the services total, paid end of month
+
+                // Plan details
+                detailsHtml += `<div class="font-bold text-lg mt-4 mb-2">Plan Details (Paid in Advance):</div>`;
+                plainTextDetails += `\nPlan Details (Paid in Advance):\n`;
+                if(planPrice > 0) {
+                    detailsHtml += `<div class="flex justify-between"><span>Plan: ${planName}</span><span>AED ${formatCurrency(planPrice)}</span></div>`;
+                    plainTextDetails += `Plan: ${planName} - AED ${formatCurrency(planPrice)}\n`;
+                } else {
+                    detailsHtml += `<div class="flex justify-between"><span>Plan: ${planName}</span></div>`;
+                    plainTextDetails += `Plan: ${planName}\n`;
+                }
+                detailsHtml += `<div class="text-right font-bold text-md mt-1">Monthly Plan Amount: AED ${formatCurrency(currentPlanMonthly)}</div>`;
+                plainTextDetails += `Monthly Plan Amount: AED ${formatCurrency(currentPlanMonthly)}\n`;
+                detailsHtml += `<div class="text-right font-bold text-md">Quarterly Plan Amount (3 months): AED ${formatCurrency(currentPlanMonthly * 3)}</div>`;
+                plainTextDetails += `Quarterly Plan Amount (3 months): AED ${formatCurrency(currentPlanMonthly * 3)}\n`;
+
+                // Add-On Services details
+                detailsHtml += `<div class="font-bold text-lg mt-4 mb-2">Add-On Services (Paid End of Month):</div><ul class="list-disc pl-5">`;
+                plainTextDetails += `\nAdd-On Services (Paid End of Month):\n`;
+
+                const checkedServices = Array.from(document.querySelectorAll('.service-checkbox:checked'));
+                if (checkedServices.length === 0) {
+                    detailsHtml += '<li>No Add-On Services</li>';
+                    plainTextDetails += '- No Add-On Services\n';
+                } else {
+                    checkedServices.forEach(checkbox => {
+                        const serviceName = checkbox.dataset.name;
+                        const originalServiceData = allServicesData.find(s => s.name === serviceName);
+                        const originalPrice = originalServiceData ? originalServiceData.price : 0;
+                        const isTrailService = originalServiceData ? originalServiceData.trail : false;
+                        
+                        let discountedPrice = originalPrice * (1 - planDiscount);
+                        if (isTrialDiscountActive && premiumPlans.includes(selectedPlanForTrial) && isTrailService) {
+                            discountedPrice = originalPrice * (1 - 0.80); // 80% off for trail services
+                        }
+
+                        const qty = serviceQuantities[serviceName] || 1; // Get quantity from stored value
+                        const serviceTotal = discountedPrice * qty;
+                        currentServicesTotal += serviceTotal;
+                        detailsHtml += `<li class="flex justify-between"><span>${serviceName} (Qty: ${qty})</span><span>AED ${formatCurrency(serviceTotal)}</span></li>`;
+                        plainTextDetails += `- ${serviceName} (Qty: ${qty}): AED ${formatCurrency(serviceTotal)}\n`;
+                    });
+                }
+                detailsHtml += '</ul><hr class="my-2">';
+                
+                detailsHtml += `<div class="text-right font-bold text-lg mt-2">Total Add-On Services: AED ${formatCurrency(currentServicesTotal)}</div>`;
+                plainTextDetails += `\nTotal Add-On Services: AED ${formatCurrency(currentServicesTotal)}\n`;
+
+                // Overall Totals
+                const overallMonthlyTotal = currentPlanMonthly + currentServicesTotal;
+                const overallQuarterlyTotal = (currentPlanMonthly * 3) + (currentServicesTotal * 3); // Quarterly for subscription + 3x for services
+
+                detailsHtml += `<hr class="my-2 border-indigo-600">`;
+                detailsHtml += `<div class="text-right font-bold text-xl mt-2">Overall Monthly Payment: AED ${formatCurrency(overallMonthlyTotal)}</div>`;
+                detailsHtml += `<div class="text-right font-bold text-lg">Overall Quarterly Payment (3 months): AED ${formatCurrency(overallQuarterlyTotal)}</div>`;
+                
+                plainTextDetails += `\n---\nOverall Monthly Payment: AED ${formatCurrency(overallMonthlyTotal)}\nOverall Quarterly Payment (3 months): AED ${formatCurrency(overallQuarterlyTotal)}`;
+
+
+                quotationPdfContent.innerHTML = detailsHtml; // Render to a specific div for PDF
+
+                // Setup WhatsApp and Email links
+                const whatsappNumber = mobile.replace(/[^0-9]/g, ''); // Clean number for WhatsApp link
+                document.getElementById('whatsapp-link').href = `https://wa.me/${countryCode}${whatsappNumber}?text=${encodeURIComponent(plainTextDetails)}`;
+                document.getElementById('email-link').href = `mailto:${email}?subject=${encodeURIComponent('Your Service Quotation')}&body=${encodeURIComponent(plainTextDetails)}`;
+
+                // Store quotation code for PDF filename
+                quotationPdfContent.dataset.quotationCode = quotationCode;
+
+                // Show the modal with fade-in effect
+                quotationModal.classList.add('modal-fade-enter-active');
+                quotationModal.classList.remove('modal-fade-leave-to');
+                quotationModal.classList.add('modal-fade-enter-to');
+                quotationModal.style.opacity = 1; // Ensure it's fully visible
+                quotationModal.style.pointerEvents = 'auto'; // Re-enable interactions
+            }
+
+            // --- PDF Download Logic ---
+            downloadPdfBtn.addEventListener('click', () => {
+                const element = document.getElementById('quotation-pdf-content'); // Content to be converted
+                const filename = element.dataset.quotationCode ? `${element.dataset.quotationCode}.pdf` : 'quotation_summary.pdf';
+                
+                // Ensure element has rendered content before generating PDF
+                if (!element.innerHTML.trim()) {
+                    console.error("Quotation content is empty, cannot generate PDF.");
+                    // Replaced alert with console error and message
+                    const messageBox = document.createElement('div');
+                    messageBox.className = 'fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-red-500 text-white p-4 rounded-md shadow-lg z-[1000]';
+                    messageBox.innerText = "Quotation content is empty. Please generate a quotation first.";
+                    document.body.appendChild(messageBox);
+                    setTimeout(() => {
+                        messageBox.remove();
+                    }, 3000); // Remove message after 3 seconds
+                    return;
+                }
+
+                // Temporary clone the element to ensure it's fully visible and laid out for html2canvas
+                const clone = element.cloneNode(true);
+                clone.style.width = '210mm'; // A4 width
+                clone.style.padding = '20mm'; // Some padding
+                clone.style.backgroundColor = '#fff';
+                clone.style.position = 'absolute';
+                clone.style.left = '-9999px'; // Move off-screen
+                document.body.appendChild(clone);
+
+                const opt = {
+                    margin: 1,
+                    filename: filename,
+                    image: { type: 'jpeg', quality: 0.98 },
+                    html2canvas: { scale: 2 },
+                    jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
+                };
+                
+                html2pdf().from(clone).set(opt).save().then(() => {
+                    document.body.removeChild(clone); // Remove clone after PDF is generated
+                });
+            });
+
+
+            // --- Modal Controls ---
+            closeModalBtn.addEventListener('click', () => {
+                // Hide the modal with fade-out effect
+                quotationModal.classList.add('modal-fade-leave-active');
+                quotationModal.classList.remove('modal-fade-enter-to');
+                quotationModal.classList.add('modal-fade-leave-to');
+                quotationModal.style.opacity = 0; // Start fade out
+                quotationModal.style.pointerEvents = 'none'; // Disable interactions during fade out
+            });
+
+            // Close modal when clicking outside the content
+            quotationModal.addEventListener('click', (e) => {
+                if (e.target === quotationModal) {
+                    // Hide the modal with fade-out effect
+                    quotationModal.classList.add('modal-fade-leave-active');
+                    quotationModal.classList.remove('modal-fade-enter-to');
+                    quotationModal.classList.add('modal-fade-leave-to');
+                    quotationModal.style.opacity = 0; // Start fade out
+                    quotationModal.style.pointerEvents = 'none'; // Disable interactions during fade out
+                }
+            });
+
+            // --- LLM Integration Logic ---
+            getRecommendationBtn.addEventListener('click', async () => {
+                const businessNeeds = businessNeedsTextarea.value.trim();
+                if (!businessNeeds) {
+                    recommendationMessage.className = 'mt-4 p-3 rounded-md text-center text-red-700 bg-red-100';
+                    recommendationMessage.innerText = 'Please describe your business goals to get a recommendation.';
+                    recommendationMessage.classList.remove('hidden');
+                    return;
+                }
+
+                recommendationBtnText.classList.add('hidden');
+                recommendationLoader.classList.remove('hidden');
+                getRecommendationBtn.disabled = true;
+                recommendationMessage.classList.add('hidden');
+
+                const availablePlansStr = plansData.map(p => p.name).join(', ');
+                const availableServicesStr = allServicesData.map(s => `${s.name} (Category: ${s.category}, Description: ${s.description}, Deliverables: ${s.deliverables}, Trail: ${s.trail})`).join('; ');
+
+                const prompt = `Based on the following business needs: "${businessNeeds}", recommend the most suitable membership plan and a list of up to 3 additional add-on services from the provided lists. The output should be a JSON object with 'plan' (string, e.g., 'Lite', 'Basic', 'Custom Bundle') and 'services' (array of strings, full service names). Prioritize services that directly address the user's needs. If no services are selected, return an empty array for 'services'.
+
+                Available Plans: ${availablePlansStr}
+                Available Services: ${availableServicesStr}`;
+
+                let chatHistory = [];
+                chatHistory.push({ role: "user", parts: [{ text: prompt }] });
+                
+                const payload = {
+                    contents: chatHistory,
+                    generationConfig: {
+                        responseMimeType: "application/json",
+                        responseSchema: {
+                            type: "OBJECT",
+                            properties: {
+                                "plan": { "type": "STRING" },
+                                "services": {
+                                    "type": "ARRAY",
+                                    "items": { "type": "STRING" }
+                                }
+                            },
+                            "required": ["plan", "services"]
+                        }
+                    }
+                };
+                // IMPORTANT: Leave apiKey as an empty string. Canvas will automatically provide it in runtime.
+                const apiKey = ""; 
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+
+                try {
+                    const response = await fetch(apiUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    const result = await response.json();
+
+                    if (result.candidates && result.candidates.length > 0 &&
+                        result.candidates[0].content && result.candidates[0].content.parts &&
+                        result.candidates[0].content.parts.length > 0) {
+                        
+                        const json = result.candidates[0].content.parts[0].text;
+                        const parsedJson = JSON.parse(json);
+                        
+                        const recommendedPlanName = parsedJson.plan;
+                        const recommendedServices = parsedJson.services;
+
+                        // Apply recommendations to the UI
+                        applyRecommendation(recommendedPlanName, recommendedServices);
+
+                        recommendationMessage.className = 'mt-4 p-3 rounded-md text-center text-green-700 bg-green-100';
+                        recommendationMessage.innerHTML = `<strong>Recommendation Applied!</strong><br>Plan: ${recommendedPlanName}<br>Services: ${recommendedServices.join(', ') || 'None'}`;
+                        recommendationMessage.classList.remove('hidden');
+
+                    } else {
+                        throw new Error('No valid recommendation found in the response.');
+                    }
+                } catch (error) {
+                    console.error('Error fetching recommendation:', error);
+                    recommendationMessage.className = 'mt-4 p-3 rounded-md text-center text-red-700 bg-red-100';
+                    recommendationMessage.innerText = 'Failed to get recommendation. Please try again or manually select services.';
+                    recommendationMessage.classList.remove('hidden');
+                } finally {
+                    recommendationBtnText.classList.remove('hidden');
+                    recommendationLoader.classList.add('hidden');
+                    getRecommendationBtn.disabled = false;
+                }
+            });
+
+            function applyRecommendation(planName, serviceNames) {
+                // Deselect all current plans and services first and reset quantities
+                planInputs.forEach(input => input.checked = false);
+                serviceCheckboxes.forEach(checkbox => {
+                    checkbox.checked = false;
+                    const serviceName = checkbox.dataset.name;
+                    serviceQuantities[serviceName] = 0; // Reset quantity for all services
+                    const qtyInput = checkbox.closest('tr').querySelector('.service-qty-input');
+                    qtyInput.value = 1; // Reset input field to 1
+                    qtyInput.disabled = true; // Disable quantity field
+                    qtyInput.classList.add('opacity-50', 'cursor-not-allowed');
+                });
+
+                // Select the recommended plan
+                const targetPlanInput = Array.from(planInputs).find(input => input.dataset.name === planName);
+                if (targetPlanInput) {
+                    targetPlanInput.checked = true;
+                    targetPlanInput.dispatchEvent(new Event('change')); // Trigger change to update price
+                } else {
+                    // Fallback to Custom Bundle if recommended plan name is invalid
+                    document.querySelector('input[name="membership-plan"][data-name="Custom Bundle"]').checked = true;
+                    document.querySelector('input[name="membership-plan"][data-name="Custom Bundle"]').dispatchEvent(new Event('change'));
+                    console.warn(`Recommended plan "${planName}" not found. Defaulting to Custom Bundle.`);
+                }
+
+                // Select recommended services and set quantity to 1
+                serviceNames.forEach(recService => {
+                    const targetServiceCheckbox = Array.from(serviceCheckboxes).find(checkbox => checkbox.dataset.name === recService);
+                    if (targetServiceCheckbox) {
+                        targetServiceCheckbox.checked = true;
+                        const qtyInput = targetServiceCheckbox.closest('tr').querySelector('.service-qty-input');
+                        qtyInput.value = 1; // Set quantity to 1 for recommended services
+                        serviceQuantities[recService] = 1; // Store quantity
+                        qtyInput.disabled = false; // Enable quantity field
+                        qtyInput.classList.remove('opacity-50', 'cursor-not-allowed');
+                        targetServiceCheckbox.dispatchEvent(new Event('change')); // Trigger change to update price
+                    } else {
+                        console.warn(`Recommended service "${recService}" not found in available services.`);
+                    }
+                });
+
+                // Ensure total calculation is re-run after all changes
+                calculateTotal();
+            }
+
+            // --- Floating Calculator Drag & Resize Logic ---
+            floatingCalculatorHeader.addEventListener('mousedown', (e) => {
+                isDragging = true;
+                floatingCalculatorSection.classList.add('dragging');
+                const rect = floatingCalculatorSection.getBoundingClientRect();
+                currentLeft = rect.left;
+                currentTop = rect.top;
+                
+                initialX = e.clientX - currentLeft;
+                initialY = e.clientY - currentTop;
+            });
+
+            document.addEventListener('mousemove', (e) => {
+                if (isDragging) {
+                    e.preventDefault();
+                    let newLeft = e.clientX - initialX;
+                    let newTop = e.clientY - initialY;
+
+                    // Boundary checks to keep the calculator within viewport
+                    newLeft = Math.max(0, Math.min(newLeft, window.innerWidth - floatingCalculatorSection.offsetWidth));
+                    newTop = Math.max(0, Math.min(newTop, window.innerHeight - floatingCalculatorSection.offsetHeight));
+
+                    floatingCalculatorSection.style.left = `${newLeft}px`;
+                    floatingCalculatorSection.style.top = `${newTop}px`;
+                }
+            });
+
+            document.addEventListener('mouseup', () => {
+                isDragging = false;
+                floatingCalculatorSection.classList.remove('dragging');
+            });
+
+            // --- Floating Calculator Font Resizing ---
+            floatingFontDecreaseBtn.addEventListener('click', () => {
+                floatingCalculatorFontSize = Math.max(0.6, floatingCalculatorFontSize - FONT_SIZE_INCREMENT); // Minimum font size
+                floatingCalculatorSection.style.setProperty('--calculator-font-size', `${floatingCalculatorFontSize}rem`);
+            });
+
+            floatingFontIncreaseBtn.addEventListener('click', () => {
+                floatingCalculatorFontSize = Math.min(1.0, floatingCalculatorFontSize + FONT_SIZE_INCREMENT); // Maximum font size
+                floatingCalculatorSection.style.setProperty('--calculator-font-size', `${floatingCalculatorFontSize}rem`);
+            });
+
+            // --- Floating Calculator Close Button ---
+            closeFloatingCalculatorBtn.addEventListener('click', () => {
+                floatingCalculatorSection.style.display = 'none'; // Hide the calculator
+            });
+
+
+            // --- Initial Setup ---
+            renderCategoryButtons(); // Render category buttons initially
+            populateServicesTable(); // Populate services table on load
+            planInputs.forEach(input => input.addEventListener('change', calculateTotal)); // Listen for plan changes
+            calculateTotal(); // Initial calculation
+        });
+    </script>
+
+</body>
+</html>
